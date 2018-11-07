@@ -3,5 +3,7 @@
 	<name>TDBug</name>
 	<author>Uuugggg</author>
 	<targetVersion>1.0.0</targetVersion>
-	<description>Useful debug/dev tools. Always keep this mod on.</description>
+	<description>Useful debug/dev tools. Always keep this mod on.
+		
+This does require hugslib loaded before it ( or just any mod with Harmony )</description>
 </ModMetaData>
