@@ -44,12 +44,23 @@ namespace TDBug
 					ModsConfig.Save();
 					ModsConfig.RestartFromChangedMods();
 				};
+				Action save = delegate
+				{
+					SoundDefOf.Tick_High.PlayOneShotOnCamera(null);
+					ModsConfig.Save();
+				};
 				Action cancel = delegate
 				{
 					ModsConfig.SetActiveToList(OpenSaveList.modIDs);
 				};
-				Find.WindowStack.Add(new Dialog_MessageBox("Restart with new mod list?",
-					"Yes".Translate(), confirm, "No".Translate(), cancel, null, true, confirm, cancel));
+				var box = new Dialog_MessageBox("Restart with new mod list?",
+					"Yes".Translate(), confirm, "No".Translate(), cancel, null, true, confirm, cancel)
+				{
+					buttonCText = "Just save mod list",
+					buttonCAction = save,
+					buttonCClose = false
+				};
+				Find.WindowStack.Add(box);
 
 				return false;
 			}
