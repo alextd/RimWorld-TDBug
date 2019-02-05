@@ -32,10 +32,40 @@ namespace TDBug
 
 		public static int idToFind;
 		public static string idBuffer;
+		public static List<Thing> foundThings = new List<Thing>();
 		public static void Prefix(Rect inRect)
 		{
-			Rect textRect = new Rect(inRect.x, inRect.y + headerHeight, inRect.width, headerHeight);
-			Widgets.TextFieldNumeric(textRect, ref idToFind, ref idBuffer);
+			if (Current.Game == null) return;
+
+			Rect idRect = new Rect(inRect.x, inRect.y + headerHeight, inRect.width, headerHeight);
+			int prevId = idToFind;
+			Widgets.TextFieldNumeric(idRect.LeftHalf(), ref idToFind, ref idBuffer);
+			if(idToFind != prevId)
+			{
+				Log.Message("Finding new things for " + idToFind);
+				foundThings = new List<Thing>(FindThings(idToFind));
+			}
+			
+			if(!foundThings.NullOrEmpty() && Widgets.ButtonText(idRect.RightHalf(), "Go to"))
+			{
+				Thing thing = foundThings[0];
+				Current.Game.CurrentMap = thing.MapHeld;
+				Find.CameraDriver.JumpToCurrentMapLoc(thing.PositionHeld);
+			}
+		}
+
+		public static IEnumerable<Thing> FindThings(int id)
+		{
+			if (Current.Game == null) yield break;
+
+			foreach (Map map in Current.Game.Maps)
+				foreach (Thing thing in map.listerThings.AllThings)
+					if (thing.thingIDNumber == id)
+						yield return thing;
+			foreach (Thing thing in Current.Game.World.worldPawns.AllPawnsAliveOrDead)
+				if (thing.thingIDNumber == id)
+					yield return thing;
+			//Todo: inner containers. or just somehow ALL THINGS
 		}
 	}
 
@@ -63,24 +93,11 @@ namespace TDBug
 
 		public static void ReadoutFoundThings(StringBuilder sb)
 		{
-			foreach (Thing thing in FindThings(ThingById_GUI.idToFind))
+			foreach (Thing thing in ThingById_GUI.foundThings)
 			{
 				sb.AppendLine("--- Item By Id");
 				sb.AppendLine(Scribe.saver.DebugOutputFor(thing));
 			}
-		}
-
-		public static IEnumerable<Thing> FindThings(int id)
-		{
-			if (Current.Game == null) yield break;
-			foreach (Map map in Current.Game.Maps)
-				foreach (Thing thing in map.listerThings.AllThings)
-					if (thing.thingIDNumber == id)
-						yield return thing;
-			foreach (Thing thing in Current.Game.World.worldPawns.AllPawnsAliveOrDead)
-				if (thing.thingIDNumber == id)
-					yield return thing;
-			//Todo: inner containers. or just somehow ALL THINGS
 		}
 	}
 }
