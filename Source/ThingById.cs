@@ -44,12 +44,16 @@ namespace TDBug
 			{
 				foundThings = new List<Thing>(FindThings(idToFind));
 			}
-			
-			if(!foundThings.NullOrEmpty() && Widgets.ButtonText(idRect.RightHalf(), "Go to"))
+
+			if (!foundThings.NullOrEmpty())
 			{
-				Thing thing = foundThings[0];
-				Current.Game.CurrentMap = thing.MapHeld;
-				Find.CameraDriver.JumpToCurrentMapLoc(thing.PositionHeld);
+				TargetHighlighter.Highlight(foundThings[0]);
+				if (Widgets.ButtonText(idRect.RightHalf(), "Go to"))
+				{
+					Thing thing = foundThings[0];
+					Current.Game.CurrentMap = thing.MapHeld;
+					Find.CameraDriver.JumpToCurrentMapLoc(thing.PositionHeld);
+				}
 			}
 		}
 
