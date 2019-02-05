@@ -59,10 +59,10 @@ namespace TDBug
 			Rect idRect = new Rect(inRect.x, inRect.y + headerHeight, inRect.width, headerHeight);
 			int prevId = idToFind;
 			Widgets.TextFieldNumeric(idRect.LeftHalf(), ref idToFind, ref idBuffer);
-			if(idToFind != prevId)
-			{
+			if (idToFind != prevId)
 				foundThings = new List<Thing>(FindThings());
-			}
+			if (idBuffer == "" && idToFind != 0)
+				foundThings = new List<Thing>();
 
 			if (!foundThings.NullOrEmpty())
 			{
