@@ -63,16 +63,10 @@ namespace TDBug
 			{
 				if (thing.thingIDNumber == idToFind)
 					yield return thing;
-				if(thing is IThingHolder thingHolder)
-				{
-					List<IThingHolder> childHolders = new List<IThingHolder>();
-					thingHolder.GetChildHolders(childHolders);
-					foreach (IThingHolder childHolder in childHolders)
-						if(childHolder.GetDirectlyHeldThings() is ThingOwner owner)
-							foreach (Thing childThing in owner)
-								if (childThing.thingIDNumber == idToFind)
-									yield return childThing;
-				}
+				if(thing is IThingHolder holder)
+					foreach (Thing childThing in ThingOwnerUtility.GetAllThingsRecursively(holder))
+						if (childThing.thingIDNumber == idToFind)
+							yield return childThing;
 			}
 		}
 
