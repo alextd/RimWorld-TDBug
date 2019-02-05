@@ -42,7 +42,6 @@ namespace TDBug
 			Widgets.TextFieldNumeric(idRect.LeftHalf(), ref idToFind, ref idBuffer);
 			if(idToFind != prevId)
 			{
-				Log.Message("Finding new things for " + idToFind);
 				foundThings = new List<Thing>(FindThings(idToFind));
 			}
 			
