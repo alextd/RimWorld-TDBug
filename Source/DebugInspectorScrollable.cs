@@ -66,12 +66,10 @@ namespace TDBug
 				//listing_Standard.Begin(inRect);
 				if (i.opcode == OpCodes.Callvirt && i.operand == beginInfo)
 				{
-					Log.Message("TRBG");
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DebugInspectorScrollable), nameof(BeginScroll)));
 				}
 				else if (i.opcode == OpCodes.Callvirt && i.operand == endInfo)
 				{
-					Log.Message("TREN");
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DebugInspectorScrollable), nameof(EndScroll)));
 				}
 				else 
@@ -84,13 +82,11 @@ namespace TDBug
 		public static float scrollViewHeight;
 		public static void BeginScroll(Listing_Standard listing, Rect rect)
 		{
-			Log.Message("BEGIN");
 			viewRect = new Rect(0f, 0f, rect.width - 16f, scrollViewHeight);
 			listing.BeginScrollViewEx(rect, ref scrollPosition, ref viewRect);
 		}
 		public static void EndScroll(Listing_Standard listing)
 		{
-			Log.Message("END");
 			listing.EndScrollView(ref viewRect);
 			scrollViewHeight = viewRect.height;
 		}
