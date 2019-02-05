@@ -19,6 +19,7 @@ namespace TDBug
 		
 		public static void Postfix(Dialog_OptionLister __instance)
 		{
+			//The inital opened window would capture the '/' used to open it, so wait a frame to actually focus
 			if (!FocusedBool.focused && FocusedBool.wait)
 			{
 				UI.FocusControl("Dialog_OptionLister_TextInput", __instance);
