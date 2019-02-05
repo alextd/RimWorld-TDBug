@@ -85,9 +85,8 @@ namespace TDBug
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{
-			 FieldInfo writeStorytellerInfo = AccessTools.Field(typeof(DebugViewSettings), nameof(DebugViewSettings.writeStoryteller));
+			FieldInfo writeStorytellerInfo = AccessTools.Field(typeof(DebugViewSettings), nameof(DebugViewSettings.writeStoryteller));
 			
-
 			foreach (CodeInstruction i in instructions)
 			{
 				//ldfld        bool Verse.EditWindow_DebugInspector::fullMode
