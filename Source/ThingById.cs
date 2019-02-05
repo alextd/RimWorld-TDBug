@@ -74,13 +74,13 @@ namespace TDBug
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{
-			FieldInfo writeCellContentsInfo = AccessTools.Field(typeof(DebugViewSettings), nameof(DebugViewSettings.writeCellContents));
+			 FieldInfo writeStorytellerInfo = AccessTools.Field(typeof(DebugViewSettings), nameof(DebugViewSettings.writeStoryteller));
 			
 
 			foreach (CodeInstruction i in instructions)
 			{
 				//ldfld        bool Verse.EditWindow_DebugInspector::fullMode
-				if (i.opcode == OpCodes.Ldsfld && i.operand == writeCellContentsInfo)
+				if (i.opcode == OpCodes.Ldsfld && i.operand == writeStorytellerInfo)
 				{
 					yield return new CodeInstruction(OpCodes.Ldloc_0) { labels = i.labels }; //local StringBuilder ; todo: find it better
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ThingById_Readout), nameof(ReadoutFoundThings)));
