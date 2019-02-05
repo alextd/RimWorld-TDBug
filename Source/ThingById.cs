@@ -42,7 +42,7 @@ namespace TDBug
 			Widgets.TextFieldNumeric(idRect.LeftHalf(), ref idToFind, ref idBuffer);
 			if(idToFind != prevId)
 			{
-				foundThings = new List<Thing>(FindThings(idToFind));
+				foundThings = new List<Thing>(FindThings());
 			}
 
 			if (!foundThings.NullOrEmpty())
@@ -57,18 +57,32 @@ namespace TDBug
 			}
 		}
 
-		public static IEnumerable<Thing> FindThings(int id)
+		public static IEnumerable<Thing> FindThings()
 		{
-			if (Current.Game == null) yield break;
+			foreach (Thing thing in FindParentThings())
+			{
+				if (thing.thingIDNumber == idToFind)
+					yield return thing;
+				if(thing is IThingHolder thingHolder)
+				{
+					List<IThingHolder> childHolders = new List<IThingHolder>();
+					thingHolder.GetChildHolders(childHolders);
+					foreach (IThingHolder childHolder in childHolders)
+						if(childHolder.GetDirectlyHeldThings() is ThingOwner owner)
+							foreach (Thing childThing in owner)
+								if (childThing.thingIDNumber == idToFind)
+									yield return childThing;
+				}
+			}
+		}
 
+		public static IEnumerable<Thing> FindParentThings()
+		{
 			foreach (Map map in Current.Game.Maps)
 				foreach (Thing thing in map.listerThings.AllThings)
-					if (thing.thingIDNumber == id)
-						yield return thing;
-			foreach (Thing thing in Current.Game.World.worldPawns.AllPawnsAliveOrDead)
-				if (thing.thingIDNumber == id)
 					yield return thing;
-			//Todo: inner containers. or just somehow ALL THINGS
+			foreach (Thing thing in Current.Game.World.worldPawns.AllPawnsAliveOrDead)
+				yield return thing;
 		}
 	}
 
@@ -98,7 +112,18 @@ namespace TDBug
 		{
 			foreach (Thing thing in ThingById_GUI.foundThings)
 			{
-				sb.AppendLine("--- Item By Id");
+				sb.AppendLine($"--- Thing By ID: {thing}");
+
+				IThingHolder holder = thing.ParentHolder;
+				while (holder != null)
+				{
+					if (holder is Thing owner)
+					{
+						sb.AppendLine($"--- Held by {owner}");
+						break;
+					}
+					holder = holder.ParentHolder;
+				}
 				sb.AppendLine(Scribe.saver.DebugOutputFor(thing));
 			}
 		}
