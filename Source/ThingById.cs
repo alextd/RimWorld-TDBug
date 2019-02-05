@@ -18,9 +18,21 @@ namespace TDBug
 		//public override void DoWindowContents(Rect inRect)
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{
+			MethodInfo ToggleableIconInfo = AccessTools.Method(typeof(WidgetRow), nameof(WidgetRow.ToggleableIcon));
+
+			bool firstIcon = true;
 			foreach (CodeInstruction i in instructions)
 			{
+				if (i.opcode == OpCodes.Callvirt && i.operand == ToggleableIconInfo && firstIcon)
+				{
+					firstIcon = false;
+
+					//widgetRow.ToggleableIcon(ref DebugViewSettings.writeCellContents, TexButton.InspectModeToggle, "Toggle shallow inspection for things on the map.", null, null);
+					i.operand = AccessTools.Method(typeof(ThingById_GUI), nameof(InsertToggleableIcon));
+				}
+
 				yield return i;
+
 				if (i.opcode == OpCodes.Ldc_R4 && (float)i.operand == headerHeight)
 				{
 					//Add another 30 pixels before readout to make room for id input (can't put it right of title, parent class controls that)
@@ -28,6 +40,13 @@ namespace TDBug
 					yield return new CodeInstruction(OpCodes.Add);
 				}
 			}
+		}
+
+		public static bool showSelected = true;
+		public static void InsertToggleableIcon(WidgetRow row, ref bool toggleable, Texture2D tex, string tooltip, SoundDef mouseoverSound = null, string tutorTag = null)
+		{
+			row.ToggleableIcon(ref showSelected, tex, "Toggle deep inspection mode for selected things", mouseoverSound);//no tutor just in case.
+			row.ToggleableIcon(ref toggleable, tex, tooltip, mouseoverSound, tutorTag);
 		}
 
 		public static int idToFind;
@@ -118,6 +137,18 @@ namespace TDBug
 					holder = holder.ParentHolder;
 				}
 				sb.AppendLine(Scribe.saver.DebugOutputFor(thing));
+			}
+
+			if(ThingById_GUI.showSelected)
+			{
+				sb.AppendLine("--- Selected Things");
+				foreach(object o in Find.Selector.SelectedObjectsListForReading)
+				{
+					if (o is Thing selected)
+					{
+						sb.AppendLine(Scribe.saver.DebugOutputFor(selected));
+					}
+				}
 			}
 		}
 	}
