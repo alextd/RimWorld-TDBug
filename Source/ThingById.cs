@@ -44,25 +44,20 @@ namespace TDBug
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{
-			FieldInfo fullModeInfo = AccessTools.Field(typeof(EditWindow_DebugInspector), nameof(EditWindow_DebugInspector.fullMode));
-
-			bool foundfullMode = false;
+			FieldInfo writeCellContentsInfo = AccessTools.Field(typeof(DebugViewSettings), nameof(DebugViewSettings.writeCellContents));
+			
 
 			foreach (CodeInstruction i in instructions)
 			{
-				yield return i;
 				//ldfld        bool Verse.EditWindow_DebugInspector::fullMode
-				if (i.opcode == OpCodes.Ldfld && i.operand == fullModeInfo)
-					foundfullMode = true;
-
-				//Pop comes after stringBuilder.AppendLine("---");
-				if (i.opcode == OpCodes.Pop && foundfullMode)
+				if (i.opcode == OpCodes.Ldsfld && i.operand == writeCellContentsInfo)
 				{
-					foundfullMode = false;
-
-					yield return new CodeInstruction(OpCodes.Ldloc_0); //local StringBuilder ; todo: find it better
+					yield return new CodeInstruction(OpCodes.Ldloc_0) { labels = i.labels }; //local StringBuilder ; todo: find it better
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ThingById_Readout), nameof(ReadoutFoundThings)));
+					i.labels = null;
 				}
+
+				yield return i;
 			}
 		}
 
@@ -70,8 +65,8 @@ namespace TDBug
 		{
 			foreach (Thing thing in FindThings(ThingById_GUI.idToFind))
 			{
+				sb.AppendLine("--- Item By Id");
 				sb.AppendLine(Scribe.saver.DebugOutputFor(thing));
-				sb.AppendLine();
 			}
 		}
 
