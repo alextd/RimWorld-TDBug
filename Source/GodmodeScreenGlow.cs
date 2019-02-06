@@ -15,7 +15,7 @@ namespace TDBug
 	class GodmodeScreenGlow
 	{
 		public static Texture2D gradientTex = ContentFinder<Texture2D>.Get("UI/Overlays/TargetHighlight_Side"); 
-		public static Color glowColor = new Color(1, 1, 0, .2f);
+		public static Color glowColor = new Color(1, 1, 0, .5f);
 		public static void Postfix()
 		{
 			if (Current.ProgramState == ProgramState.Playing && DebugSettings.godMode)
