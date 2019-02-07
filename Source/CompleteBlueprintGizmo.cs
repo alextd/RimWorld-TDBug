@@ -14,7 +14,7 @@ namespace TDBug
 		//public override IEnumerable<Gizmo> GetGizmos()
 		public static void Postfix(ref IEnumerable<Gizmo> __result, ThingWithComps __instance)
 		{
-			if (!Prefs.DevMode) return;
+			if (!Prefs.DevMode || !DebugSettings.godMode) return;
 
 			List<Gizmo> result = __result.ToList();
 
