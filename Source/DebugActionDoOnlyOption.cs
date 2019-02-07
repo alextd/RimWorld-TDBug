@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Reflection.Emit;
 using Verse;
 using RimWorld;
 using Harmony;
@@ -14,6 +15,9 @@ namespace TDBug
 	{
 		public static bool done;
 		public static Action action;
+		public static Rect actionRect;
+		public static int dropdownIndex;
+		public static int currentIndex;
 
 		public static MethodInfo FilterAllowsInfo = AccessTools.Method(typeof(Dialog_OptionLister), "FilterAllows");
 		public static bool FilterAllowsAccess(this Dialog_DebugOptionLister window, string label) =>
@@ -21,34 +25,54 @@ namespace TDBug
 
 		public static FieldInfo filterInfo = AccessTools.Field(typeof(Dialog_OptionLister), "filter");
 		public static string GetFilter(this Dialog_OptionLister window) =>
-			(string) filterInfo.GetValue(window);
+			(string)filterInfo.GetValue(window);
 
-		public static void AddAction(Dialog_DebugOptionLister __instance, string label, Action action)
+		public static FieldInfo listingInfo = AccessTools.Field(typeof(Dialog_OptionLister), "listing");
+		public static Listing_Standard GetListing(this Dialog_OptionLister window) =>
+			(Listing_Standard)listingInfo.GetValue(window);
+
+		public static void AddAction(Dialog_DebugOptionLister window, string label, Action newAction)
 		{
-			if (__instance.FilterAllowsAccess(label))
+			if (window.FilterAllowsAccess(label))
 			{
-				if(label.StartsWith("T: "))
+				if (label.StartsWith("T: "))
 					label = label.Substring(3);
 
-				if (String.Equals(__instance.GetFilter(), label, StringComparison.OrdinalIgnoreCase))
+				if (currentIndex++ == dropdownIndex || String.Equals(window.GetFilter(), label, StringComparison.OrdinalIgnoreCase))
 				{
-					//Exact match
-					OnlyAction.action = action;
+					//Exact match or selected
 					done = true;
+
+					action = newAction;
+
+					actionRect = window.GetListing().GetRect(23f);
+					window.GetListing().Gap(-23f);//this feels like a cheat
 				}
-				else if (OnlyAction.done) { }
-				else if (OnlyAction.action == null)
+				else if (done) { }
+				else if (action == null)
 				{
-					//first action allowed:
-					OnlyAction.action = action;
+					//first action found, allow it:
+					action = newAction;
+
+					actionRect = window.GetListing().GetRect(23f);
+					window.GetListing().Gap(-23f);//this feels like a cheat
 				}
 				else
 				{
-					//second action allowed, so too many
-					OnlyAction.action = null;
-					OnlyAction.done = true;
+					//second action, so too many
+					action = null;
+					done = true;
 				}
 			}
+		}
+	}
+
+	[HarmonyPatch(typeof(Dialog_OptionLister), MethodType.Constructor)]
+	public static class DropdownIndexInit
+	{
+		public static void Prefix()
+		{
+			OnlyAction.dropdownIndex = -1;
 		}
 	}
 
@@ -60,6 +84,39 @@ namespace TDBug
 		{
 			OnlyAction.action = null;
 			OnlyAction.done = false;
+			OnlyAction.currentIndex = 0;
+
+			if (Event.current.keyCode == KeyCode.DownArrow && Event.current.type == EventType.KeyDown)
+			{
+				OnlyAction.dropdownIndex++;
+				Event.current.Use();
+			}
+			if (Event.current.keyCode == KeyCode.UpArrow && Event.current.type == EventType.KeyDown)
+			{
+				OnlyAction.dropdownIndex--;
+				Event.current.Use();
+			}
+		}
+		
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			MethodInfo EndInfo = AccessTools.Method(typeof(Listing), nameof(Listing.End));
+
+			foreach(var i in instructions)
+			{
+				if(i.opcode == OpCodes.Callvirt && i.operand == EndInfo)
+				{
+					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(OnlyActionInit), nameof(DrawHighlight)));
+				}
+				yield return i;
+			}
+		}
+
+		public static Color highlightColor = new Color(1, 1, 0, 0.3f);
+		public static void DrawHighlight()
+		{
+			if (OnlyAction.action != null)
+				Widgets.DrawBoxSolid(OnlyAction.actionRect, highlightColor);
 		}
 	}
 
@@ -78,7 +135,7 @@ namespace TDBug
 	static class DebugActionCheckItem
 	{
 		//protected bool DebugAction(string label, Action action)
-		public static void Postfix(Dialog_DebugOptionLister __instance, string label, Action action)
+		public static void Prefix(Dialog_DebugOptionLister __instance, string label, Action action)
 		{
 			OnlyAction.AddAction(__instance, label, action);
 		}
@@ -88,7 +145,7 @@ namespace TDBug
 	static class DebugToolMapCheckItem
 	{
 		//protected void DebugToolMap(string label, Action toolAction)
-		public static void Postfix(Dialog_DebugOptionLister __instance, string label, Action toolAction)
+		public static void Prefix(Dialog_DebugOptionLister __instance, string label, Action toolAction)
 		{
 			OnlyAction.AddAction(__instance, label, () => DebugTools.curTool = new DebugTool(label, toolAction));
 		}
@@ -98,7 +155,7 @@ namespace TDBug
 	static class DebugToolWorldCheckItem
 	{
 		//protected void DebugToolWorld(string label, Action toolAction)
-		public static void Postfix(Dialog_DebugOptionLister __instance, string label, Action toolAction)
+		public static void Prefix(Dialog_DebugOptionLister __instance, string label, Action toolAction)
 		{
 			OnlyAction.AddAction(__instance, label, () => DebugTools.curTool = new DebugTool(label, toolAction));
 		}
@@ -113,11 +170,11 @@ namespace TDBug
 	static class FilterSplitOnSpace
 	{
 		//protected bool FilterAllows(string label)
-		public static bool Prefix(Dialog_OptionLister __instance, string label, ref bool __result)
+		public static bool Prefix(Dialog_OptionLister __instance, string ___filter, string label, ref bool __result)
 		{
 			__result = true;
-			if (!__instance.GetFilter().NullOrEmpty() && !label.NullOrEmpty())
-				foreach (string filterWord in __instance.GetFilter().Split(' ', '\t'))
+			if (!___filter.NullOrEmpty() && !label.NullOrEmpty())
+				foreach (string filterWord in ___filter.Split(' ', '\t'))
 					if (label.IndexOf(filterWord, StringComparison.OrdinalIgnoreCase) < 0)
 						__result = false;
 
