@@ -20,7 +20,7 @@ namespace TDBug
 			(bool)FilterAllowsInfo.Invoke(window, new object[] { label });
 
 		public static FieldInfo filterInfo = AccessTools.Field(typeof(Dialog_OptionLister), "filter");
-		public static string GetFilter(this Dialog_DebugOptionLister window) =>
+		public static string GetFilter(this Dialog_OptionLister window) =>
 			(string) filterInfo.GetValue(window);
 
 		public static void AddAction(Dialog_DebugOptionLister __instance, string label, Action action)
@@ -105,4 +105,23 @@ namespace TDBug
 	}
 
 	//CheckboxLabeledDebug would be nice but return closes the window
+
+
+	//The original filter method checked an exact substring so "pawn spawn" wouldn't find "spawn pawn"
+	//Let's separate by word
+	[HarmonyPatch(typeof(Dialog_OptionLister), "FilterAllows")]
+	static class FilterSplitOnSpace
+	{
+		//protected bool FilterAllows(string label)
+		public static bool Prefix(Dialog_OptionLister __instance, string label, ref bool __result)
+		{
+			__result = true;
+			if (!__instance.GetFilter().NullOrEmpty() && !label.NullOrEmpty())
+				foreach (string filterWord in __instance.GetFilter().Split(' ', '\t'))
+					if (label.IndexOf(filterWord, StringComparison.OrdinalIgnoreCase) < 0)
+						__result = false;
+
+			return false;
+		}
+	}
 }
