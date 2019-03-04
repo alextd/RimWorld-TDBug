@@ -5,9 +5,15 @@ using System.Text;
 using Verse;
 using RimWorld;
 using Harmony;
+using UnityEngine;
 
 namespace TDBug
 {
+	public static class Tex
+	{
+		public static Texture2D frame = ContentFinder<Texture2D>.Get("Things/Building/Misc/CaravanPackingSpot");
+	}
+
 	[HarmonyPatch(typeof(ThingWithComps), "GetGizmos")]
 	class CompleteBlueprintGizmo : Command
 	{
@@ -17,6 +23,11 @@ namespace TDBug
 			if (!Prefs.DevMode || !DebugSettings.godMode) return;
 
 			List<Gizmo> result = __result.ToList();
+			Map map = __instance.Map;
+			Pawn builder = map.mapPawns.FreeColonistsSpawned.First(p =>
+			p.workSettings.WorkIsActive(WorkTypeDefOf.Construction) &&
+			(p.story == null || !p.story.WorkTypeIsDisabled(WorkTypeDefOf.Construction)));
+
 
 			if (__instance is Blueprint || __instance is Frame)
 				result.Add(new Command_Action()
@@ -26,11 +37,6 @@ namespace TDBug
 					defaultDesc = "Complete this building",
 					action = delegate
 					{
-						Map map = __instance.Map;
-						Pawn builder = map.mapPawns.FreeColonistsSpawned.First(p =>
-						p.workSettings.WorkIsActive(WorkTypeDefOf.Construction) &&
-						(p.story == null || !p.story.WorkTypeIsDisabled(WorkTypeDefOf.Construction)));
-
 						if (__instance is Frame frame)
 						{
 							frame.CompleteConstruction(builder);
@@ -54,12 +60,24 @@ namespace TDBug
 
 						if (__instance is Blueprint_Install install)
 						{
-							if(install.MiniToInstallOrBuildingToReinstall is Building building)
+							if (install.MiniToInstallOrBuildingToReinstall is Building building)
 							{
 								building.MakeMinified();
 							}
 							install.TryReplaceWithSolidThing(builder, out Thing thing, out bool ended);
 						}
+					}
+				});
+
+			if (__instance is Blueprint_Build bp)
+				result.Add(new Command_Action()
+				{
+					defaultLabel = "Make Frame",
+					icon = Tex.frame,
+					defaultDesc = "Make into a frame",
+					action = delegate
+					{
+						bp.TryReplaceWithSolidThing(builder, out Thing thing, out bool dummy);
 					}
 				});
 
