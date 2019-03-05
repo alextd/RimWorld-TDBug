@@ -55,7 +55,7 @@ namespace TDBug
 
 		public static void ActuallyToggleableIcon(WidgetRow row, Texture2D tex, string tooltip, Color? mouseoverColor)
 		{
-			row.ToggleableIcon(ref DebugSettings.godMode, tex, "tooltip", null, null);
+			row.ToggleableIcon(ref DebugSettings.godMode, tex, tooltip, null, null);//mouseoverColor from ButtonIcon doesn't get used in ToggleableIcon
 		}
 	}
 }
