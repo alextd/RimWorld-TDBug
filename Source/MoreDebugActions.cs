@@ -22,7 +22,7 @@ namespace TDBug
 		public static Dictionary<string, DA> insertAfter = new Dictionary<string, DA>() {
 			{ "T: Try place near stacks of 75...", new DA() {label = "T: Try place near full stacks...", action = "fullStackAction"} },
 			{ "Destroy all things", new DA() {label = "Destroy all selected", action = "destroySelectedAction"} },
-			{ "T: Heal random injury (10)", new DA() {label = "Full Heal", action = "healFullAction", tool="DebugToolMapForPawns" } }
+			{ "T: Heal random injury (10)", new DA() {label = "T: Full Heal", action = "healFullAction", tool="DebugToolMapForPawns" } }
 		};
 		
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
