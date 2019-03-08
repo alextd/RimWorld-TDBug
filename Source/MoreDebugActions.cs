@@ -43,13 +43,11 @@ namespace TDBug
 				{
 					if (instList[i - 8].opcode == OpCodes.Ldstr && instList[i - 8].operand is string afterLabel)
 					{
-						Log.Message($"Checking {afterLabel}");
 						foreach (var kvp in insertAfter)
 						{
 							if (kvp.Key == afterLabel)
 							{
 								string tool = kvp.Value.tool ?? nameof(DebugAction);
-								Log.Message($"Doing {kvp.Value.label}:{tool}");
 								yield return new CodeInstruction(OpCodes.Ldarg_0);//this 
 								yield return new CodeInstruction(OpCodes.Ldstr, kvp.Value.label);//string
 								//delegates are easier when you have a compiler, but for these purposes use a static Action field and provide the name here.
