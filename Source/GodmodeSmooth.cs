@@ -16,11 +16,17 @@ namespace TDBug
 		{
 			if (!DebugSettings.godMode) return true;
 
+			Pawn worker = __instance.Map.mapPawns.FreeColonistsSpawned.FirstOrDefault();
+			if (worker == null)
+			{
+				Log.Warning("TDBug can't do work without a colonist to credit it with");
+				return false;
+			}
 			Building edifice = c.GetEdifice(__instance.Map);
 			if (edifice != null && edifice.def.IsSmoothable)
 			{
 				__instance.Map.designationManager.TryRemoveDesignation(c, DesignationDefOf.Mine);
-				SmoothableWallUtility.SmoothWall(edifice, __instance.Map.mapPawns.FreeColonistsSpawned.First());
+				SmoothableWallUtility.SmoothWall(edifice, worker);
 				return false;
 			}
 			TerrainDef smoothedTerrain = c.GetTerrain(__instance.Map).smoothedTerrain;

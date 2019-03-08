@@ -24,7 +24,7 @@ namespace TDBug
 
 			List<Gizmo> result = __result.ToList();
 			Map map = __instance.Map;
-			Pawn builder = map.mapPawns.FreeColonistsSpawned.First(p =>
+			Pawn builder = map.mapPawns.FreeColonistsSpawned.FirstOrDefault(p =>
 			p.workSettings.WorkIsActive(WorkTypeDefOf.Construction) &&
 			(p.story == null || !p.story.WorkTypeIsDisabled(WorkTypeDefOf.Construction)));
 
@@ -37,6 +37,11 @@ namespace TDBug
 					defaultDesc = "Complete this building",
 					action = delegate
 					{
+						if(builder == null)
+						{
+							Log.Warning("TDBug can't do construction without a colonist to credit it with");
+							return;
+						}
 						if (__instance is Frame frame)
 						{
 							frame.CompleteConstruction(builder);
@@ -77,6 +82,11 @@ namespace TDBug
 					defaultDesc = "Make into a frame",
 					action = delegate
 					{
+						if (builder == null)
+						{
+							Log.Warning("TDBug can't do construction without a colonist to credit it with");
+							return;
+						}
 						bp.TryReplaceWithSolidThing(builder, out Thing thing, out bool dummy);
 					}
 				});
