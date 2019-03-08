@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace TDBug
 {
+	[StaticConstructorOnStartup]
 	public static class Tex
 	{
 		public static Texture2D frame = ContentFinder<Texture2D>.Get("Things/Building/Misc/CaravanPackingSpot");
