@@ -24,7 +24,8 @@ namespace TDBug
 			{ "T: Try place near stacks of 75...", new DA() {label = "T: Try place near full stacks...", action = "fullStackAction"} },
 			{ "Destroy all things", new DA() {label = "Destroy all selected", action = "destroySelectedAction"} },
 			{ "T: Heal random injury (10)", new DA() {label = "T: Full Heal", action = "healFullAction", tool="DebugToolMapForPawns" } },
-			{ "T: Make roof", new DA() {label = "T: Make roof (by def)", action = "makeRoofByDef"} }
+			{ "T: Make roof", new DA() {label = "T: Make roof (by def)", action = "makeRoofByDef"} },
+			{ "T: Damage apparel", new DA() {label = "T: Add selected things to inventory", action = "addSeltoInv", tool="DebugToolMapForPawns"} }
 		};
 		
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -35,28 +36,28 @@ namespace TDBug
 			MethodInfo DebugToolMapForPawnsInfo = AccessTools.Method(typeof(Dialog_DebugOptionLister), "DebugToolMapForPawns");
 
 			List<CodeInstruction> instList = instructions.ToList();
+			string lastString = "";
 			for (int i = 0; i < instList.Count; i++)
 			{
 				CodeInstruction inst = instList[i];
 
 				yield return inst;
 
+				if (inst.opcode == OpCodes.Ldstr && inst.operand is string afterLabel)
+					lastString = afterLabel;
 				if (inst.opcode == OpCodes.Call && 
-					(inst.operand == DebugActionInfo || inst.operand == DebugToolMapForPawnsInfo || inst.operand == DebugToolMapInfo))
+					(inst.operand == DebugActionInfo || inst.operand == DebugToolMapInfo || inst.operand == DebugToolMapForPawnsInfo))
 				{
-					if (instList[i - 8].opcode == OpCodes.Ldstr && instList[i - 8].operand is string afterLabel)
+					foreach (var kvp in insertAfter)
 					{
-						foreach (var kvp in insertAfter)
+						if (kvp.Key == lastString)
 						{
-							if (kvp.Key == afterLabel)
-							{
-								string tool = kvp.Value.tool ?? nameof(DebugAction);
-								yield return new CodeInstruction(OpCodes.Ldarg_0);//this 
-								yield return new CodeInstruction(OpCodes.Ldstr, kvp.Value.label);//string
-								//delegates are easier when you have a compiler, but for these purposes use a static Action field and provide the name here.
-								yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(MoreDebugActions), kvp.Value.action));//Action
-								yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(MoreDebugActions), tool));//this.DebugAction(string, Action)
-							}
+							string tool = kvp.Value.tool ?? nameof(DebugAction);
+							yield return new CodeInstruction(OpCodes.Ldarg_0);//this 
+							yield return new CodeInstruction(OpCodes.Ldstr, kvp.Value.label);//string
+							//delegates are easier when you have a compiler, but for these purposes use a static Action field and provide the name here.
+							yield return new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(MoreDebugActions), kvp.Value.action));//Action
+							yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(MoreDebugActions), tool));//this.DebugAction(string, Action)
 						}
 					}
 				}
@@ -128,6 +129,14 @@ namespace TDBug
 			}
 
 			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
+		};
+		public static Action<Pawn> addSeltoInv = delegate (Pawn p)
+		{
+			foreach (Thing t in Find.Selector.SelectedObjectsListForReading.
+				Where(o => o is Thing t && t.def.EverHaulable).Cast<Thing>().ToList())//ToList to copy since SelectedObjects changed when despawned
+			{
+				p.inventory.GetDirectlyHeldThings().TryAdd(t.SplitOff(t.stackCount));
+			}
 		};
 	}
 }
