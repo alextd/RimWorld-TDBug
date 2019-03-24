@@ -25,7 +25,9 @@ namespace TDBug
 			{ "Destroy all things", new DA() {label = "Destroy all selected", action = "destroySelectedAction"} },
 			{ "T: Heal random injury (10)", new DA() {label = "T: Full Heal", action = "healFullAction", tool="DebugToolMapForPawns" } },
 			{ "T: Make roof", new DA() {label = "T: Make roof (by def)", action = "makeRoofByDef"} },
-			{ "T: Damage apparel", new DA() {label = "T: Add selected things to inventory", action = "addSeltoInv", tool="DebugToolMapForPawns"} }
+			{ "T: Damage apparel", new DA() {label = "T: Add selected things to inventory", action = "addSeltoInv", tool="DebugToolMapForPawns"} },
+			{ "T: Joy -20%", new DA() {label = "T: Need -20%", action = "addNeed"} },
+			{ "T: Chemical -20%", new DA() {label = "Fulfill all needs", action = "fulfillAllNeeds"} }
 		};
 		
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -64,18 +66,30 @@ namespace TDBug
 			}
 		}
 
+		// static Dialog_DebugOptionLister so delegate can use it
+		public static Dialog_DebugOptionLister dlg;
+
 		// What 'tool' above refers to:
 		public static MethodInfo DebugInfo = AccessTools.Method(typeof(Dialog_DebugOptionLister), "DebugAction");
-		public static void DebugAction(Dialog_DebugOptionLister dialog, string label, Action action) =>
+		public static void DebugAction(Dialog_DebugOptionLister dialog, string label, Action action)
+		{
+			dlg = dialog;
 			DebugInfo.Invoke(dialog, new object[] { label, action });
+		}
 
 		public static MethodInfo DebugToolMapForPawnsInfo = AccessTools.Method(typeof(Dialog_DebugOptionLister), "DebugToolMapForPawns");
-		public static void DebugToolMapForPawns(Dialog_DebugOptionLister dialog, string label, Action<Pawn> action) =>
+		public static void DebugToolMapForPawns(Dialog_DebugOptionLister dialog, string label, Action<Pawn> action)
+		{
+			dlg = dialog;
 			DebugToolMapForPawnsInfo.Invoke(dialog, new object[] { label, action });
+		}
 
 		public static MethodInfo DebugToolMapInfo = AccessTools.Method(typeof(Dialog_DebugOptionLister), "DebugToolMap");
-		public static void DebugToolMap(Dialog_DebugOptionLister dialog, string label, Action action) =>
+		public static void DebugToolMap(Dialog_DebugOptionLister dialog, string label, Action action)
+		{
+			dlg = dialog;
 			DebugToolMapInfo.Invoke(dialog, new object[] { label, action });
+		}
 
 		//what 'action' above refers to
 		public static Action fullStackAction = delegate
@@ -136,6 +150,40 @@ namespace TDBug
 				Where(o => o is Thing t && t.def.EverHaulable).Cast<Thing>().ToList())//ToList to copy since SelectedObjects changed when despawned
 			{
 				p.inventory.GetDirectlyHeldThings().TryAdd(t.SplitOff(t.stackCount));
+			}
+		};
+
+		//private void OffsetNeed(NeedDef nd, float offsetPct)
+		public static MethodInfo OffsetNeedInfo = AccessTools.Method(typeof(Dialog_DebugActionsMenu), "OffsetNeed");
+		public static Action addNeed = delegate ()
+		{
+			List<DebugMenuOption> list = new List<DebugMenuOption>();
+
+			list.Add(new DebugMenuOption("All Needs", DebugMenuOptionMode.Tool, delegate
+			{
+				foreach (NeedDef current in DefDatabase<NeedDef>.AllDefs)
+					OffsetNeedInfo.Invoke(dlg, new object[] { current, -0.2f });
+			}));
+
+			foreach (NeedDef current in DefDatabase<NeedDef>.AllDefs)
+			{
+				NeedDef localDef = current;
+				list.Add(new DebugMenuOption(localDef.LabelCap, DebugMenuOptionMode.Tool, delegate
+				{
+					OffsetNeedInfo.Invoke(dlg, new object[] { localDef, -0.2f });
+				}));
+			}
+
+			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
+		};
+		public static Action fulfillAllNeeds = delegate ()
+		{
+			foreach(Pawn pawn in Find.CurrentMap.mapPawns.AllPawnsSpawned)
+			{
+				foreach(Need need in pawn.needs.AllNeeds)
+				{
+					need.CurLevelPercentage = 1f;
+				}
 			}
 		};
 	}
