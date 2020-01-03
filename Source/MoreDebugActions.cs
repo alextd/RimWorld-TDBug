@@ -27,7 +27,8 @@ namespace TDBug
 			{ "T: Make roof", new DA() {label = "T: Make roof (by def)", action = "makeRoofByDef"} },
 			{ "T: Damage apparel", new DA() {label = "T: Add selected things to inventory", action = "addSeltoInv", tool="DebugToolMapForPawns"} },
 			{ "T: Joy -20%", new DA() {label = "T: Need -20%", action = "addNeed"} },
-			{ "T: Chemical -20%", new DA() {label = "Fulfill all needs", action = "fulfillAllNeeds"} }
+			{ "T: Chemical -20%", new DA() {label = "Fulfill all needs", action = "fulfillAllNeeds"} },
+			{ "T: Delete roof", new DA() {label = "T: Set Deep Resource", action = "addDeepResource"} }
 		};
 		
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -186,5 +187,48 @@ namespace TDBug
 				}
 			}
 		};
+		public static Action addDeepResource = delegate ()
+		{
+			List<DebugMenuOption> list = new List<DebugMenuOption>();
+			for (int size = 0; size < 5; size++)
+			{
+				int localSize = size;
+				list.Add(new DebugMenuOption($"{ size * 2 + 1 }x{ size * 2 + 1 }", DebugMenuOptionMode.Action, delegate
+				{
+					AddDeepResourceSize(localSize);
+				}));
+			}
+
+			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
+		};
+
+		public static void AddDeepResourceSize(int size)
+		{
+			List<DebugMenuOption> list = new List<DebugMenuOption>();
+			list.Add(new DebugMenuOption($"Deplete deep resource", DebugMenuOptionMode.Tool, delegate
+			{
+				CellRect.CellRectIterator iterator = CellRect.CenteredOn(UI.MouseCell(), size).GetIterator();
+				while (!iterator.Done())
+				{
+					Find.CurrentMap.deepResourceGrid.SetAt(iterator.Current, null, 0);
+					iterator.MoveNext();
+				}
+			}));
+			foreach (var current in DefDatabase<ThingDef>.AllDefs.Where(def => def.deepCommonality > 0))
+			{
+				ThingDef localDef = current;
+				list.Add(new DebugMenuOption($"Spawn deep resource: {localDef.LabelCap}", DebugMenuOptionMode.Tool, delegate
+				{
+					CellRect.CellRectIterator iterator = CellRect.CenteredOn(UI.MouseCell(), size).GetIterator();
+					while (!iterator.Done())
+					{
+						Find.CurrentMap.deepResourceGrid.SetAt(iterator.Current, localDef, localDef.deepCountPerCell);
+						iterator.MoveNext();
+					}
+				}));
+			}
+
+			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
+		}
 	}
 }
