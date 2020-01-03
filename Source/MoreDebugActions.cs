@@ -205,30 +205,28 @@ namespace TDBug
 		public static void AddDeepResourceSize(int size)
 		{
 			List<DebugMenuOption> list = new List<DebugMenuOption>();
-			list.Add(new DebugMenuOption($"Deplete deep resource", DebugMenuOptionMode.Tool, delegate
-			{
-				CellRect.CellRectIterator iterator = CellRect.CenteredOn(UI.MouseCell(), size).GetIterator();
-				while (!iterator.Done())
-				{
-					Find.CurrentMap.deepResourceGrid.SetAt(iterator.Current, null, 0);
-					iterator.MoveNext();
-				}
-			}));
+			list.Add(new DebugMenuOption($"Deplete deep resource", DebugMenuOptionMode.Tool,
+				() => AddDeepResources(size, null)));
 			foreach (var current in DefDatabase<ThingDef>.AllDefs.Where(def => def.deepCommonality > 0))
 			{
 				ThingDef localDef = current;
-				list.Add(new DebugMenuOption($"Spawn deep resource: {localDef.LabelCap}", DebugMenuOptionMode.Tool, delegate
-				{
-					CellRect.CellRectIterator iterator = CellRect.CenteredOn(UI.MouseCell(), size).GetIterator();
-					while (!iterator.Done())
-					{
-						Find.CurrentMap.deepResourceGrid.SetAt(iterator.Current, localDef, localDef.deepCountPerCell);
-						iterator.MoveNext();
-					}
-				}));
+				list.Add(new DebugMenuOption($"Spawn deep resource: {localDef.LabelCap}", DebugMenuOptionMode.Tool,
+					() => AddDeepResources(size, localDef))) ;
 			}
 
 			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
+		}
+
+		public static void AddDeepResources(int size, ThingDef def)
+		{
+			Map map = Find.CurrentMap;
+			CellRect.CellRectIterator iterator = CellRect.CenteredOn(UI.MouseCell(), size).GetIterator();
+			while (!iterator.Done())
+			{
+				if(iterator.Current.InBounds(map))
+					Find.CurrentMap.deepResourceGrid.SetAt(iterator.Current, def, def?.deepCountPerCell ?? 0);
+				iterator.MoveNext();
+			}
 		}
 	}
 }
