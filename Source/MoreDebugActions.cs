@@ -28,7 +28,8 @@ namespace TDBug
 			{ "T: Damage apparel", new DA() {label = "T: Add selected things to inventory", action = "addSeltoInv", tool="DebugToolMapForPawns"} },
 			{ "T: Joy -20%", new DA() {label = "T: Need -20%", action = "addNeed"} },
 			{ "T: Chemical -20%", new DA() {label = "Fulfill all needs", action = "fulfillAllNeeds"} },
-			{ "T: Delete roof", new DA() {label = "T: Set Deep Resource", action = "addDeepResource"} }
+			{ "T: Delete roof", new DA() {label = "T: Set Deep Resource", action = "addDeepResource"} },
+			{ "T: Destroy trees 21x21", new DA() {label = "T: Move selection to...", action = "moveSelection", tool="DebugToolMap"} }
 		};
 		
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -228,5 +229,17 @@ namespace TDBug
 				iterator.MoveNext();
 			}
 		}
+
+		public static Action moveSelection = delegate ()
+		{
+			if (UI.MouseCell().InBounds(Find.CurrentMap))
+			{
+				IntVec3 pos = UI.MouseCell();
+				foreach (Thing current in Find.Selector.SelectedObjectsListForReading.Where(s => s is Thing).ToList())
+				{
+					current.SetPositionDirect(pos);
+				}
+			}
+		};
 	}
 }
