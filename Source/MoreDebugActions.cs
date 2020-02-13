@@ -237,7 +237,7 @@ namespace TDBug
 				IntVec3 pos = UI.MouseCell();
 				foreach (Thing current in Find.Selector.SelectedObjectsListForReading.Where(s => s is Thing).ToList())
 				{
-					current.SetPositionDirect(pos);
+					current.Position = pos;
 				}
 			}
 		};
