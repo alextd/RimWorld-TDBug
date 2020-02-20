@@ -12,8 +12,6 @@ namespace TDBug
 {
 	public static class MoreDebugActions
 	{
-		//	[DebugAction("General", null, actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-		//	[DebugAction("Pawns", null, actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		/*
 		 * I would like to insert these things in specific places, but the ease of DebugAction makes that not so possible
 		 * 
@@ -29,10 +27,11 @@ namespace TDBug
 		};
 		*/
 
-		//TryPlaceOptionsForStackCount with -1 almost works but I want def.stackLimit >= 2
+
 		[DebugAction(DebugActionCategories.Spawning, "Try place near full stack...", allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void FullStack()
 		{
+			//TryPlaceOptionsForStackCount with -1 almost works but I want def.stackLimit >= 2, so copy it all here:
 			List<DebugMenuOption> list = new List<DebugMenuOption>();
 			foreach (ThingDef current in DefDatabase<ThingDef>.AllDefs
 				.Where(def => DebugThingPlaceHelper.IsDebugSpawnable(def) && def.stackLimit >= 2))
@@ -47,6 +46,7 @@ namespace TDBug
 			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
 		}
 
+
 		[DebugAction(DebugActionCategories.General, null, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void DestroyAllSelected()
 		{
@@ -55,10 +55,11 @@ namespace TDBug
 				current.Destroy(DestroyMode.Vanish);
 			}
 		}
-		/*
-		public static Action<Pawn> healFullAction = delegate (Pawn p)
+
+
+		[DebugAction(DebugActionCategories.Pawns, null, actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void FullHeal(Pawn p)
 		{
-			
 			foreach(Hediff_Injury hediff_Injury in (from x in p.health.hediffSet.GetHediffs<Hediff_Injury>()
 					 where x.CanHealNaturally() || x.CanHealFromTending()
 					 select x))
@@ -66,8 +67,11 @@ namespace TDBug
 				hediff_Injury.Heal(10000f);//probably enough
 
 			}
-		};
-		public static Action makeRoofByDef = delegate ()
+		}
+
+
+		[DebugAction(DebugActionCategories.General, "Make roof (by def)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void MakeRoofByDef()
 		{
 			List<DebugMenuOption> list = new List<DebugMenuOption>();
 			foreach (RoofDef current in DefDatabase<RoofDef>.AllDefs)
@@ -81,26 +85,33 @@ namespace TDBug
 			}
 
 			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
-		};
-		public static Action<Pawn> addSeltoInv = delegate (Pawn p)
+		}
+
+
+		[DebugAction(DebugActionCategories.Pawns, "Add selected things to inventory", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void AddSelToInv(Pawn p)
 		{
 			foreach (Thing t in Find.Selector.SelectedObjectsListForReading.
 				Where(o => o is Thing t && t.def.EverHaulable).Cast<Thing>().ToList())//ToList to copy since SelectedObjects changed when despawned
 			{
 				p.inventory.GetDirectlyHeldThings().TryAdd(t.SplitOff(t.stackCount));
 			}
-		};
+		}
 
-		//private void OffsetNeed(NeedDef nd, float offsetPct)
+
+		//private static void OffsetNeed(NeedDef nd, float offsetPct)
 		public static MethodInfo OffsetNeedInfo = AccessTools.Method(typeof(Dialog_DebugActionsMenu), "OffsetNeed");
-		public static Action addNeed = delegate ()
+		private static void OffsetNeed(NeedDef nd, float offsetPct) => OffsetNeedInfo.Invoke(null, new object[] { nd, offsetPct });
+
+		[DebugAction(DebugActionCategories.Pawns, "Need -20% (by def)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void AddNeed()
 		{
 			List<DebugMenuOption> list = new List<DebugMenuOption>();
 
 			list.Add(new DebugMenuOption("All Needs", DebugMenuOptionMode.Tool, delegate
 			{
 				foreach (NeedDef current in DefDatabase<NeedDef>.AllDefs)
-					OffsetNeedInfo.Invoke(null, new object[] { current, -0.2f });
+					OffsetNeed(current, -0.2f);
 			}));
 
 			foreach (NeedDef current in DefDatabase<NeedDef>.AllDefs)
@@ -108,13 +119,16 @@ namespace TDBug
 				NeedDef localDef = current;
 				list.Add(new DebugMenuOption(localDef.LabelCap, DebugMenuOptionMode.Tool, delegate
 				{
-					OffsetNeedInfo.Invoke(null, new object[] { localDef, -0.2f });
+					OffsetNeed(localDef, -0.2f);
 				}));
 			}
 
 			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
-		};
-		public static Action fulfillAllNeeds = delegate ()
+		}
+
+
+		[DebugAction(DebugActionCategories.Pawns, null, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void FullFillAllNeeds()
 		{
 			foreach(Pawn pawn in Find.CurrentMap.mapPawns.AllPawnsSpawned)
 			{
@@ -123,8 +137,11 @@ namespace TDBug
 					need.CurLevelPercentage = 1f;
 				}
 			}
-		};
-		public static Action addDeepResource = delegate ()
+		}
+
+
+		[DebugAction(DebugActionCategories.General, null, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void SetDeepResource()
 		{
 			List<DebugMenuOption> list = new List<DebugMenuOption>();
 			for (int size = 0; size < 5; size++)
@@ -137,7 +154,7 @@ namespace TDBug
 			}
 
 			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
-		};
+		}
 
 		public static void AddDeepResourceSize(int size)
 		{
@@ -162,7 +179,9 @@ namespace TDBug
 					Find.CurrentMap.deepResourceGrid.SetAt(pos, def, def?.deepCountPerCell ?? 0);
 		}
 
-		public static Action moveSelection = delegate ()
+
+		[DebugAction(DebugActionCategories.General, "Move selection to...", actionType = DebugActionType.ToolMap,  allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void MoveSelection()
 		{
 			if (UI.MouseCell().InBounds(Find.CurrentMap))
 			{
@@ -176,7 +195,6 @@ namespace TDBug
 					}
 				}
 			}
-		};
-		*/
+		}
 	}
 }
