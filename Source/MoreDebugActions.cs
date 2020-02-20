@@ -15,6 +15,8 @@ namespace TDBug
 		//	[DebugAction("General", null, actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		//	[DebugAction("Pawns", null, actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		/*
+		 * I would like to insert these things in specific places, but the ease of DebugAction makes that not so possible
+		 * 
 			{ "T: Try place near stacks of 75...", new DA() {label = "T: Try place near full stacks...", action = "fullStackAction"} },
 			{ "Destroy all things", new DA() {label = "Destroy all selected", action = "destroySelectedAction"} },
 			{ "T: Heal random injury (10)", new DA() {label = "T: Full Heal", action = "healFullAction", tool="DebugToolMapForPawns" } },
@@ -26,8 +28,9 @@ namespace TDBug
 			{ "T: Destroy trees 21x21", new DA() {label = "T: Move selection to...", action = "moveSelection", tool="DebugToolMap"} }
 		};
 		*/
+
 		//TryPlaceOptionsForStackCount with -1 almost works but I want def.stackLimit >= 2
-		[DebugAction("Spawning", "Try place near full stack...", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		[DebugAction(DebugActionCategories.Spawning, "Try place near full stack...", allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void FullStack()
 		{
 			List<DebugMenuOption> list = new List<DebugMenuOption>();
@@ -43,14 +46,16 @@ namespace TDBug
 
 			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
 		}
-		/*
-		public static Action destroySelectedAction = delegate
+
+		[DebugAction(DebugActionCategories.General, null, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void DestroyAllSelected()
 		{
 			foreach (Thing current in Find.Selector.SelectedObjectsListForReading.Where(s => s is Thing).ToList())
 			{
 				current.Destroy(DestroyMode.Vanish);
 			}
-		};
+		}
+		/*
 		public static Action<Pawn> healFullAction = delegate (Pawn p)
 		{
 			
