@@ -238,6 +238,10 @@ namespace TDBug
 				foreach (Thing current in Find.Selector.SelectedObjectsListForReading.Where(s => s is Thing).ToList())
 				{
 					current.Position = pos;
+					if (current is Pawn pawn)
+					{
+						pawn.Notify_Teleported(false, true);
+					}
 				}
 			}
 		};
