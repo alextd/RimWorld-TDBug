@@ -8,10 +8,10 @@ using UnityEngine;
 
 namespace TDBug
 {
-	[HarmonyPatch(typeof(Dialog_DebugActionsMenu), "OffsetNeed")]
+	[HarmonyPatch(typeof(DebugToolsPawns), "OffsetNeed")]
 	class DebugShiftClickNeedGood
 	{
-		//private void OffsetNeed(NeedDef nd, float offsetPct)
+		//private static void OffsetNeed(NeedDef nd, float offsetPct)
 		public static void Prefix(ref float offsetPct)
 		{
 			if (Event.current.shift)

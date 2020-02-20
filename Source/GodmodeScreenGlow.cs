@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
+using RimWorld; //for SoundDefOf I guess
 using HarmonyLib;
 using UnityEngine;
 
@@ -53,9 +54,10 @@ namespace TDBug
 			}
 		}
 
-		public static void ActuallyToggleableIcon(WidgetRow row, Texture2D tex, string tooltip, Color? mouseoverColor)
+		//public bool ButtonIcon(Texture2D tex, string tooltip = null, Color? mouseoverColor = null, bool doMouseoverSound = true)
+		public static void ActuallyToggleableIcon(WidgetRow row, Texture2D tex, string tooltip, Color? mouseoverColor, bool doMouseoverSound)
 		{
-			row.ToggleableIcon(ref DebugSettings.godMode, tex, tooltip, null, null);//mouseoverColor from ButtonIcon doesn't get used in ToggleableIcon
+			row.ToggleableIcon(ref DebugSettings.godMode, tex, tooltip, doMouseoverSound? SoundDefOf.Mouseover_Standard:null, null);//mouseoverColor from ButtonIcon doesn't get used in ToggleableIcon
 		}
 	}
 }
