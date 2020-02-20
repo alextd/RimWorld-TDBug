@@ -4,8 +4,8 @@
 	<author>Uuugggg</author>
 	<supportedVersions>
 		<li>1.0</li>
+		<li>1.1</li>
 	</supportedVersions>
-	<description>Useful debug/dev tools. Always keep this mod on.
-		
-This does require hugslib loaded before it ( or just any mod with Harmony )</description>
+	<packageId>Uuugggg.TDBug</packageId>
+	<description>Useful debug/dev tools. Always keep this mod on.</description>
 </ModMetaData>
