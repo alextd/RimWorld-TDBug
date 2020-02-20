@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Verse;
 using RimWorld;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 
 namespace TDBug
@@ -27,7 +27,7 @@ namespace TDBug
 			Map map = __instance.Map;
 			Pawn builder = map.mapPawns.FreeColonistsSpawned.FirstOrDefault(p =>
 			p.workSettings.WorkIsActive(WorkTypeDefOf.Construction) &&
-			(p.story == null || !p.story.WorkTypeIsDisabled(WorkTypeDefOf.Construction)));
+			((p?.story.DisabledWorkTagsBackstoryAndTraits ?? WorkTags.None) & WorkTypeDefOf.Construction.workTags) == WorkTags.None);
 
 
 			if (__instance is Blueprint || __instance is Frame)
@@ -52,7 +52,7 @@ namespace TDBug
 						{
 							if (blueprint.def.entityDefToBuild is ThingDef thingDef)
 							{
-								Thing thing = ThingMaker.MakeThing(thingDef, blueprint.UIStuff());
+								Thing thing = ThingMaker.MakeThing(thingDef, blueprint.EntityToBuildStuff());
 								thing.SetFactionDirect(Faction.OfPlayer);
 								GenSpawn.Spawn(thing, blueprint.Position, map, blueprint.Rotation);
 							}

@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
-using Harmony;
+using HarmonyLib;
 
 namespace TDBug
 {
@@ -64,11 +64,11 @@ namespace TDBug
 			foreach (CodeInstruction i in instructions)
 			{
 				//listing_Standard.Begin(inRect);
-				if (i.opcode == OpCodes.Callvirt && i.operand == beginInfo)
+				if (i.opcode == OpCodes.Callvirt && i.operand.Equals(beginInfo))
 				{
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DebugInspectorScrollable), nameof(BeginScroll)));
 				}
-				else if (i.opcode == OpCodes.Callvirt && i.operand == endInfo)
+				else if (i.opcode == OpCodes.Callvirt && i.operand.Equals(endInfo))
 				{
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DebugInspectorScrollable), nameof(EndScroll)));
 				}

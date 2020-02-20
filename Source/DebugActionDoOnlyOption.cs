@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
 using RimWorld;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 
 namespace TDBug
@@ -104,7 +104,7 @@ namespace TDBug
 
 			foreach(var i in instructions)
 			{
-				if(i.opcode == OpCodes.Callvirt && i.operand == EndInfo)
+				if(i.opcode == OpCodes.Callvirt && i.operand.Equals(EndInfo))
 				{
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(OnlyActionInit), nameof(DrawHighlight)));
 				}

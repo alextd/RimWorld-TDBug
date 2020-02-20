@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 using Verse;
 using RimWorld;
 using RimWorld.Planet;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 
 namespace TDBug
@@ -38,7 +38,7 @@ namespace TDBug
 		public static void QuickScenarioConfiguration()
 		{
 			Current.Game.storyteller = new Storyteller(StorytellerDefOf.Cassandra, DifficultyDefOf.Rough);
-			Current.Game.World = WorldGenerator.GenerateWorld(0.05f, GenText.RandomSeedString(), OverallRainfall.Normal, OverallTemperature.Normal);
+			Current.Game.World = WorldGenerator.GenerateWorld(0.05f, GenText.RandomSeedString(), OverallRainfall.Normal, OverallTemperature.Normal, OverallPopulation.Normal);
 			Find.GameInitData.ChooseRandomStartingTile();
 			Find.GameInitData.mapSize = 150;
 			Find.GameInitData.PrepForMapGen();

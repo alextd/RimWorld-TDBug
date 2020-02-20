@@ -2,7 +2,7 @@
 using System;
 using Verse;
 using UnityEngine;
-using Harmony;
+using HarmonyLib;
 using RimWorld;
 
 namespace TDBug
@@ -20,7 +20,7 @@ namespace TDBug
 #if DEBUG
 			HarmonyInstance.DEBUG = true;
 #endif
-			HarmonyInstance harmony = HarmonyInstance.Create("Uuugggg.rimworld.TDBug.main");
+			Harmony harmony = new Harmony("Uuugggg.rimworld.TDBug.main");
 			LongEventHandler.QueueLongEvent(() => harmony.PatchAll(), null, true, null);
 		}
 	}

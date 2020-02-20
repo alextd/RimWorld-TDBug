@@ -6,7 +6,7 @@ using System.Reflection;
 using Verse;
 using Verse.Sound;
 using RimWorld;
-using Harmony;
+using HarmonyLib;
 
 namespace TDBug
 {
@@ -25,7 +25,7 @@ namespace TDBug
 		public static List<string> modIDs;
 		public static void Postfix()
 		{
-			modIDs = ModsConfig.ActiveModsInLoadOrder.Select(m => m.Identifier).ToList();
+			modIDs = ModsConfig.ActiveModsInLoadOrder.Select(m => m.PackageId).ToList();
 		}
 	}
 	

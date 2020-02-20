@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
 using RimWorld;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 
 namespace TDBug
@@ -23,7 +23,7 @@ namespace TDBug
 			bool firstIcon = true;
 			foreach (CodeInstruction i in instructions)
 			{
-				if (i.opcode == OpCodes.Callvirt && i.operand == ToggleableIconInfo && firstIcon)
+				if (i.opcode == OpCodes.Callvirt && i.operand.Equals(ToggleableIconInfo) && firstIcon)
 				{
 					firstIcon = false;
 
@@ -33,7 +33,7 @@ namespace TDBug
 
 				yield return i;
 
-				if (i.opcode == OpCodes.Ldc_R4 && (float)i.operand == headerHeight)
+				if (i.opcode == OpCodes.Ldc_R4 && ((float)i.operand).Equals(headerHeight))
 				{
 					//Add another 30 pixels before readout to make room for id input (can't put it right of title, parent class controls that)
 					yield return new CodeInstruction(OpCodes.Ldc_R4, headerHeight);
@@ -109,7 +109,7 @@ namespace TDBug
 			foreach (CodeInstruction i in instructions)
 			{
 				//ldfld        bool Verse.EditWindow_DebugInspector::fullMode
-				if (i.opcode == OpCodes.Ldsfld && i.operand == writeStorytellerInfo)
+				if (i.opcode == OpCodes.Ldsfld && i.operand.Equals(writeStorytellerInfo))
 				{
 					yield return new CodeInstruction(OpCodes.Ldloc_0) { labels = i.labels }; //local StringBuilder ; todo: find it better
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ThingById_Readout), nameof(ReadoutFoundThings)));

@@ -5,7 +5,7 @@ using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
-using Harmony;
+using HarmonyLib;
 using RimWorld;
 
 namespace TDBug
@@ -50,7 +50,7 @@ namespace TDBug
 				if (inst.opcode == OpCodes.Ldstr && inst.operand is string afterLabel)
 					lastString = afterLabel;
 				if (inst.opcode == OpCodes.Call && 
-					(inst.operand == DebugActionInfo || inst.operand == DebugToolMapInfo || inst.operand == DebugToolMapForPawnsInfo))
+					(inst.operand.Equals(DebugActionInfo) || inst.operand.Equals(DebugToolMapInfo) || inst.operand.Equals(DebugToolMapForPawnsInfo)))
 				{
 					foreach (var kvp in insertAfter)
 					{
@@ -135,12 +135,8 @@ namespace TDBug
 				RoofDef localDef = current;
 				list.Add(new DebugMenuOption(localDef.LabelCap, DebugMenuOptionMode.Tool, delegate
 				{
-					CellRect.CellRectIterator iterator = CellRect.CenteredOn(UI.MouseCell(), 1).GetIterator();
-					while (!iterator.Done())
-					{
-						Find.CurrentMap.roofGrid.SetRoof(iterator.Current, localDef);
-						iterator.MoveNext();
-					}
+					foreach(var pos in CellRect.CenteredOn(UI.MouseCell(), 1))
+						Find.CurrentMap.roofGrid.SetRoof(pos, localDef);
 				}));
 			}
 
@@ -221,13 +217,9 @@ namespace TDBug
 		public static void AddDeepResources(int size, ThingDef def)
 		{
 			Map map = Find.CurrentMap;
-			CellRect.CellRectIterator iterator = CellRect.CenteredOn(UI.MouseCell(), size).GetIterator();
-			while (!iterator.Done())
-			{
-				if(iterator.Current.InBounds(map))
-					Find.CurrentMap.deepResourceGrid.SetAt(iterator.Current, def, def?.deepCountPerCell ?? 0);
-				iterator.MoveNext();
-			}
+			foreach(var pos in CellRect.CenteredOn(UI.MouseCell(), size))
+				if(pos.InBounds(map))
+					Find.CurrentMap.deepResourceGrid.SetAt(pos, def, def?.deepCountPerCell ?? 0);
 		}
 
 		public static Action moveSelection = delegate ()
