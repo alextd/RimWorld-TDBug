@@ -18,7 +18,7 @@ namespace TDBug
 		static Mod()
 		{
 #if DEBUG
-			HarmonyInstance.DEBUG = true;
+			Harmony.DEBUG = true;
 #endif
 			Harmony harmony = new Harmony("Uuugggg.rimworld.TDBug.main");
 			LongEventHandler.QueueLongEvent(() => harmony.PatchAll(), null, true, null);
