@@ -128,7 +128,7 @@ namespace TDBug
 
 
 		[DebugAction(DebugActionCategories.Pawns, null, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-		public static void FullFillAllNeeds()
+		public static void FulillAllNeeds()
 		{
 			foreach(Pawn pawn in Find.CurrentMap.mapPawns.AllPawnsSpawned)
 			{
