@@ -26,8 +26,8 @@ namespace TDBug
 			List<Gizmo> result = __result.ToList();
 			Map map = __instance.Map;
 			Pawn builder = map.mapPawns.FreeColonistsSpawned.FirstOrDefault(p =>
-			p.workSettings.WorkIsActive(WorkTypeDefOf.Construction) &&
-			((p?.story.DisabledWorkTagsBackstoryAndTraits ?? WorkTags.None) & WorkTypeDefOf.Construction.workTags) == WorkTags.None);
+				p.workSettings.WorkIsActive(WorkTypeDefOf.Construction) &&
+				!p.WorkTypeIsDisabled(WorkTypeDefOf.Construction));
 
 
 			if (__instance is Blueprint || __instance is Frame)
