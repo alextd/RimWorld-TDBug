@@ -23,7 +23,7 @@ namespace TDBug
 			bool firstIcon = true;
 			foreach (CodeInstruction i in instructions)
 			{
-				if (i.opcode == OpCodes.Callvirt && i.operand.Equals(ToggleableIconInfo) && firstIcon)
+				if (i.Calls(ToggleableIconInfo) && firstIcon)
 				{
 					firstIcon = false;
 
@@ -33,7 +33,7 @@ namespace TDBug
 
 				yield return i;
 
-				if (i.opcode == OpCodes.Ldc_R4 && ((float)i.operand).Equals(headerHeight))
+				if (i.LoadsConstant(headerHeight))
 				{
 					//Add another 30 pixels before readout to make room for id input (can't put it right of title, parent class controls that)
 					yield return new CodeInstruction(OpCodes.Ldc_R4, headerHeight);
@@ -109,7 +109,7 @@ namespace TDBug
 			foreach (CodeInstruction i in instructions)
 			{
 				//ldfld        bool Verse.EditWindow_DebugInspector::fullMode
-				if (i.opcode == OpCodes.Ldsfld && i.operand.Equals(writeStorytellerInfo))
+				if (i.LoadsField(writeStorytellerInfo))
 				{
 					yield return new CodeInstruction(OpCodes.Ldloc_0) { labels = i.labels }; //local StringBuilder ; todo: find it better
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ThingById_Readout), nameof(ReadoutFoundThings)));

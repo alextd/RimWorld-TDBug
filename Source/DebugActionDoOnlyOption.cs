@@ -104,7 +104,7 @@ namespace TDBug
 
 			foreach(var i in instructions)
 			{
-				if(i.opcode == OpCodes.Callvirt && i.operand.Equals(EndInfo))
+				if(i.Calls(EndInfo))
 				{
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(OnlyActionInit), nameof(DrawHighlight)));
 				}

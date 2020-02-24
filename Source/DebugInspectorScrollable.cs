@@ -64,11 +64,11 @@ namespace TDBug
 			foreach (CodeInstruction i in instructions)
 			{
 				//listing_Standard.Begin(inRect);
-				if (i.opcode == OpCodes.Callvirt && i.operand.Equals(beginInfo))
+				if (i.Calls(beginInfo))
 				{
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DebugInspectorScrollable), nameof(BeginScroll)));
 				}
-				else if (i.opcode == OpCodes.Callvirt && i.operand.Equals(endInfo))
+				else if (i.Calls(endInfo))
 				{
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DebugInspectorScrollable), nameof(EndScroll)));
 				}

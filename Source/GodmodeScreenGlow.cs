@@ -43,8 +43,8 @@ namespace TDBug
 			for(int i=0; i<instList.Count(); i++)
 			{
 				CodeInstruction inst = instList[i];
-				if(inst.opcode == OpCodes.Callvirt && inst.operand.Equals(ButtonIconInfo)
-					&& instList[i+3].opcode == OpCodes.Call && instList[i+3].operand.Equals(ToggleGodModeInfo))
+				if(inst.Calls(ButtonIconInfo)
+					&& instList[i+3].Calls(ToggleGodModeInfo))
 				{
 					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(HighlightButton), nameof(ActuallyToggleableIcon)));
 					yield return new CodeInstruction(OpCodes.Br, instList[++i].operand);
