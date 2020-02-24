@@ -100,7 +100,7 @@ namespace TDBug
 
 
 		//private static void OffsetNeed(NeedDef nd, float offsetPct)
-		public static MethodInfo OffsetNeedInfo = AccessTools.Method(typeof(Dialog_DebugActionsMenu), "OffsetNeed");
+		public static MethodInfo OffsetNeedInfo = AccessTools.Method(typeof(DebugToolsPawns), "OffsetNeed");
 		private static void OffsetNeed(NeedDef nd, float offsetPct) => OffsetNeedInfo.Invoke(null, new object[] { nd, offsetPct });
 
 		[DebugAction(DebugActionCategories.Pawns, "Need -20% (by def)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
