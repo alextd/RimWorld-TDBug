@@ -28,10 +28,11 @@ namespace TDBug
 					firstIcon = false;
 
 					//widgetRow.ToggleableIcon(ref DebugViewSettings.writeCellContents, TexButton.InspectModeToggle, "Toggle shallow inspection for things on the map.", null, null);
-					i.operand = AccessTools.Method(typeof(ThingById_GUI), nameof(InsertToggleableIcon));
+					yield return new CodeInstruction(OpCodes.Call,
+						AccessTools.Method(typeof(ThingById_GUI), nameof(InsertToggleableIcon)));
 				}
-
-				yield return i;
+				else
+					yield return i;
 
 				if (i.LoadsConstant(headerHeight))
 				{
