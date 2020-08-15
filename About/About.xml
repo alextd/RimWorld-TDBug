@@ -9,4 +9,12 @@
 	</supportedVersions>
 	<packageId>Uuugggg.TDBug</packageId>
 	<description>Useful debug/dev tools. Always keep this mod on.</description>
+	<modDependencies>
+    <li>
+        <packageId>brrainz.harmony</packageId>
+        <displayName>Harmony</displayName>
+        <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+        <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+    </li>
+	</modDependencies>
 </ModMetaData>
