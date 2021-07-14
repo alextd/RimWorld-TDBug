@@ -31,7 +31,7 @@ namespace TDBug
 			}
 		}
 	}
-	[HarmonyPatch(typeof(DebugWindowsOpener), "DrawButtons")]
+	//[HarmonyPatch(typeof(DebugWindowsOpener), "DrawButtons")]
 	public static class HighlightButton
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

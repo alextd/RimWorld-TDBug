@@ -87,7 +87,11 @@ namespace TDBug
 		}
 		public static void EndScroll(Listing_Standard listing)
 		{
-			listing.EndScrollView(ref viewRect);
+			//listing.EndScrollView(ref viewRect); //1.3 removed this
+			viewRect = new Rect(0f, 0f, listing.ColumnWidth, listing.CurHeight);
+			Widgets.EndScrollView();
+			listing.End();
+
 			scrollViewHeight = viewRect.height;
 		}
 	}
