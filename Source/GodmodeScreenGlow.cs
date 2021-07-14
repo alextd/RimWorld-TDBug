@@ -31,7 +31,7 @@ namespace TDBug
 			}
 		}
 	}
-	//[HarmonyPatch(typeof(DebugWindowsOpener), "DrawButtons")]
+	[HarmonyPatch(typeof(DebugWindowsOpener), "DrawButtons")]
 	public static class HighlightButton
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -54,9 +54,10 @@ namespace TDBug
 			}
 		}
 
-		//public bool ButtonIcon(Texture2D tex, string tooltip = null, Color? mouseoverColor = null, bool doMouseoverSound = true)
-		public static void ActuallyToggleableIcon(WidgetRow row, Texture2D tex, string tooltip, Color? mouseoverColor, bool doMouseoverSound)
+		//public bool ButtonIcon(Texture2D tex, string tooltip = null, Color? mouseoverColor = null, Color? backgroundColor = null, Color? mouseoverBackgroundColor = null, bool doMouseoverSound = true, float overrideSize = -1f)
+		public static void ActuallyToggleableIcon(WidgetRow row, Texture2D tex, string tooltip, Color? mouseoverColor, Color? backgroundColor = null, Color? mouseoverBackgroundColor = null, bool doMouseoverSound = true, float overrideSize = -1f)
 		{
+			//public void ToggleableIcon(ref bool toggleable, Texture2D tex, string tooltip, SoundDef mouseoverSound = null, string tutorTag = null)
 			row.ToggleableIcon(ref DebugSettings.godMode, tex, tooltip, doMouseoverSound? SoundDefOf.Mouseover_Standard:null, null);//mouseoverColor from ButtonIcon doesn't get used in ToggleableIcon
 		}
 	}
