@@ -65,6 +65,7 @@
     <Compile Include="DebugActionFilterMultiWord.cs" />
     <Compile Include="DebugActionHighlightExactMatch.cs" />
     <Compile Include="DebugInspectorScrollable.cs" />
+    <Compile Include="DebugNoExpansion.cs" />
     <Compile Include="DebugShiftClickNeedGood.cs" />
     <Compile Include="GodmodePowerSwitch.cs" />
     <Compile Include="GodmodeRoof.cs" />
