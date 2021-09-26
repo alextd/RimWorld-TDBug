@@ -61,25 +61,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CompleteBlueprintGizmo.cs" />
-    <Compile Include="DebugActionFilterMultiWord.cs" />
-    <Compile Include="DebugActionHighlightExactMatch.cs" />
-    <Compile Include="DebugInspectorScrollable.cs" />
-    <Compile Include="DebugNoExpansion.cs" />
-    <Compile Include="DebugShiftClickNeedGood.cs" />
-    <Compile Include="GodmodePowerSwitch.cs" />
-    <Compile Include="GodmodeRoof.cs" />
-    <Compile Include="GodmodeScreenGlow.cs" />
-    <Compile Include="GodmodeSmooth.cs" />
-    <Compile Include="ModsConfigCloseConfirm.cs" />
-    <Compile Include="MoreDebugActions.cs" />
-    <Compile Include="NoLogLimit.cs" />
-    <Compile Include="NoModUploadWait.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QuickstartFromScenarioConfig.cs" />
-    <Compile Include="SaveDebugWindowRect.cs" />
-    <Compile Include="TDBug.cs" />
-    <Compile Include="ThingById.cs" />
+    <Compile Include="**\*.cs" Exclude="obj\**\*" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
