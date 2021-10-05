@@ -43,9 +43,9 @@ namespace TDBug
 							Log.Warning("TDBug can't do construction without a colonist to credit it with");
 							return;
 						}
-						if (__instance is Frame frame)
+						if (__instance is Frame f)
 						{
-							frame.CompleteConstruction(builder);
+							f.CompleteConstruction(builder);
 						}
 
 						if (__instance is Blueprint_Build blueprint)
@@ -89,6 +89,23 @@ namespace TDBug
 							return;
 						}
 						bp.TryReplaceWithSolidThing(builder, out Thing thing, out bool dummy);
+					}
+				});
+
+			if (__instance is Frame frame)
+				result.Add(new Command_Action()
+				{
+					defaultLabel = "Fill",
+					icon = Tex.frame,
+					defaultDesc = "Fill Frame with needed materials",
+					action = delegate
+					{
+						var thingsToAdd = frame.MaterialsNeeded().Select(count =>
+						{ var thing = ThingMaker.MakeThing(count.thingDef);
+							thing.stackCount = count.count;
+							return thing;
+						});
+						frame.GetDirectlyHeldThings().TryAddRangeOrTransfer(thingsToAdd, destroyLeftover: true);
 					}
 				});
 
