@@ -89,6 +89,7 @@ namespace TDBug
 							return;
 						}
 						bp.TryReplaceWithSolidThing(builder, out Thing thing, out bool dummy);
+						Find.Selector.Select(thing);
 					}
 				});
 
