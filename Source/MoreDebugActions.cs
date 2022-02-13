@@ -140,6 +140,27 @@ namespace TDBug
 		}
 
 
+		public static AccessTools.FieldRef<Pawn_WorkSettings, DefMap<WorkTypeDef, int>> prioritiesField = AccessTools.FieldRefAccess<Pawn_WorkSettings, DefMap<WorkTypeDef, int>>("priorities");
+		[DebugAction(DebugActionCategories.Pawns, null, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void EverybodyWorkEverything()
+		{
+			foreach (Pawn pawn in Find.CurrentMap.mapPawns.AllPawnsSpawned)
+			{
+				if (pawn.skills != null)
+				{
+					foreach (SkillDef sDef in DefDatabase<SkillDef>.AllDefs)
+						pawn.skills.Learn(sDef, 1E+08f);
+				}
+
+				if (pawn.workSettings != null)
+				{
+					prioritiesField.Invoke(pawn.workSettings).SetAll(1);
+					pawn.workSettings.Notify_UseWorkPrioritiesChanged();
+				}
+			}
+		}
+
+
 		[DebugAction(DebugActionCategories.General, null, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void SetDeepResource()
 		{
