@@ -12,18 +12,22 @@ using UnityEngine;
 
 namespace TDBug
 {
+	[DefOf]
+	public static class TDKeyBindingDefOf
+	{
+		public static KeyBindingDef Dev_BackSelectedDebugAction;
+	}
+
 	[HarmonyPatch(typeof(Dialog_DebugOptionLister), "DoListingItems")]
 	public static class DebugActionArrowNavigate
 	{
-
 		delegate void ChangeHighlightedOptionDel(Dialog_DebugOptionLister lister);
 		static ChangeHighlightedOptionDel ChangeHighlightedOption =
 			AccessTools.MethodDelegate<ChangeHighlightedOptionDel>(AccessTools.Method(typeof(Dialog_DebugOptionLister), "ChangeHighlightedOption"), virtualCall: true);
 
 		public static void Postfix(Dialog_DebugOptionLister __instance)
 		{
-			//But don't set KeyBinding Dev_ChangeSelectedDebugAction to be up or down,cause then this would trigger twice.
-			if (Event.current.type == EventType.KeyDown && Event.current.keyCode == UnityEngine.KeyCode.DownArrow)
+			if (TDKeyBindingDefOf.Dev_BackSelectedDebugAction.IsDownEvent)
 			{
 				ChangeHighlightedOption(__instance);
 			}
@@ -41,15 +45,79 @@ namespace TDBug
 		//public static string TextField(Rect rect, string text)
 		public static string TextFieldIfNoArrow(Rect rect, string text)
 		{
-			if (Event.current.type == EventType.KeyDown &&
-			(Event.current.keyCode == UnityEngine.KeyCode.DownArrow ||
-			Event.current.keyCode == UnityEngine.KeyCode.UpArrow))
-				return text;
+			if (KeyBindingDefOf.Dev_ChangeSelectedDebugAction.KeyDownEvent ||
+				TDKeyBindingDefOf.Dev_BackSelectedDebugAction.KeyDownEvent)
+				return text;	//roundabout to return text just to assign itself, but transpiling above would be tricker to remove all ilcode to set the field
 			
 			//TextField will consume the event and set type to Used instead of KeyDown.
 			//Plus, up/down just moves text input line and that's honestly annoying
 
 			return Widgets.TextField(rect, text);
 		}
+	}
+
+	//Reverse order for TDKeyBindingDefOf.Dev_BackSelectedDebugAction.KeyDownEvent
+	//protected override void ChangeHighlightedOption()
+	[HarmonyPatch(typeof(Dialog_DebugActionsMenu), "ChangeHighlightedOption")]
+	public static class ReverseChangeOrder
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			//change
+			//	(highlightedIndex + num + 1)
+			//to 
+			//  (highlightedIndex - num - 1)
+			//if TDKeyBindingDefOf.Dev_BackSelectedDebugAction.KeyDownEvent
+
+			//change
+
+			//ldloc.0      // highlightedIndex
+			//ldloc.1      // index1
+			//add          
+			//ldc.i4.1     // 1
+			//add          
+
+			//to
+
+			//
+			//ldloc.0      // highlightedIndex
+			//ldloc.1      // index1
+			//Call AddOrSubtract(highlightedIndex, index1)
+
+			List<CodeInstruction> instList = instructions.ToList();
+			for(int i=0;i<instList.Count;i++)
+			{
+				var inst = instList[i];
+
+				if (inst.opcode == OpCodes.Add && i + 2 < instList.Count
+					&& instList[i + 2].opcode == OpCodes.Add)
+				{
+					inst.opcode = OpCodes.Call;
+					inst.operand = AccessTools.Method(typeof(ReverseChangeOrder), nameof(AddOrSubstract));
+
+					i += 2;// skip adding 1
+				}
+				else if (inst.opcode == OpCodes.Rem)
+				{
+					inst.opcode = OpCodes.Call;
+					inst.operand = AccessTools.Method(typeof(ReverseChangeOrder), nameof(ModulusActually));
+				}
+				
+				yield return inst;
+			}
+		}
+
+		public static int AddOrSubstract(int a, int b)
+		{
+			//change
+			//	(highlightedIndex + num + 1)
+			//to 
+			//  (highlightedIndex - num - 1)
+
+			return TDKeyBindingDefOf.Dev_BackSelectedDebugAction.KeyDownEvent ?
+				a - b - 1 : a + b + 1;
+		}
+
+		public static int ModulusActually(int a, int b) => ((a %= b) < 0) ? a + b : a;
 	}
 }
