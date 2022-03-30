@@ -217,5 +217,38 @@ namespace TDBug
 				}
 			}
 		}
+
+
+		[DebugAction(DebugActionCategories.Spawning, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void SpawnForBlueprints()
+		{
+			foreach (Thing thing in Find.CurrentMap.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint))
+				if (thing is IConstructible cons)
+					SpawnMaterialsNear(cons.MaterialsNeeded(), thing.Position);
+
+			foreach (Thing thing in Find.CurrentMap.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame))
+				if (thing is IConstructible cons)
+					SpawnMaterialsNear(cons.MaterialsNeeded(), thing.Position);
+
+		}
+
+		public static void SpawnMaterialsNear(List<ThingDefCountClass> mats, IntVec3 pos)
+		{
+			foreach(var mat in mats)
+			{
+				ThingDef def = mat.thingDef;
+				int total = mat.count;
+				while (total > 0)
+				{
+					Thing thing = ThingMaker.MakeThing(def);
+
+					thing.stackCount = total > def.stackLimit ? def.stackLimit : total;
+					total -= thing.stackCount;
+
+					GenSpawn.Spawn(thing, pos, Find.CurrentMap);
+				}
+
+			}
+		}
 	}
 }
