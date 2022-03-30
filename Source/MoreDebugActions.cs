@@ -60,9 +60,9 @@ namespace TDBug
 		[DebugAction(DebugActionCategories.Pawns, null, actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void FullHeal(Pawn p)
 		{
-			foreach(Hediff_Injury hediff_Injury in (from x in p.health.hediffSet.GetHediffs<Hediff_Injury>()
-					 where x.CanHealNaturally() || x.CanHealFromTending()
-					 select x))
+			foreach (Hediff_Injury hediff_Injury in (from x in p.health.hediffSet.GetHediffs<Hediff_Injury>()
+																							 where x.CanHealNaturally() || x.CanHealFromTending()
+																							 select x))
 			{
 				hediff_Injury.Heal(10000f);//probably enough
 
@@ -79,7 +79,7 @@ namespace TDBug
 				RoofDef localDef = current;
 				list.Add(new DebugMenuOption(localDef.LabelCap, DebugMenuOptionMode.Tool, delegate
 				{
-					foreach(var pos in CellRect.CenteredOn(UI.MouseCell(), 1))
+					foreach (var pos in CellRect.CenteredOn(UI.MouseCell(), 1))
 						Find.CurrentMap.roofGrid.SetRoof(pos, localDef);
 				}));
 			}
@@ -130,9 +130,9 @@ namespace TDBug
 		[DebugAction(DebugActionCategories.Pawns, null, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void FulfillAllNeeds()
 		{
-			foreach(Pawn pawn in Find.CurrentMap.mapPawns.AllPawnsSpawned)
+			foreach (Pawn pawn in Find.CurrentMap.mapPawns.AllPawnsSpawned)
 			{
-				foreach(Need need in pawn.needs.AllNeeds)
+				foreach (Need need in pawn.needs.AllNeeds)
 				{
 					need.CurLevelPercentage = 1f;
 				}
@@ -186,7 +186,7 @@ namespace TDBug
 			{
 				ThingDef localDef = current;
 				list.Add(new DebugMenuOption($"Spawn deep resource: {localDef.LabelCap}", DebugMenuOptionMode.Tool,
-					() => AddDeepResources(size, localDef))) ;
+					() => AddDeepResources(size, localDef)));
 			}
 
 			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
@@ -195,13 +195,13 @@ namespace TDBug
 		public static void AddDeepResources(int size, ThingDef def)
 		{
 			Map map = Find.CurrentMap;
-			foreach(var pos in CellRect.CenteredOn(UI.MouseCell(), size))
-				if(pos.InBounds(map))
+			foreach (var pos in CellRect.CenteredOn(UI.MouseCell(), size))
+				if (pos.InBounds(map))
 					Find.CurrentMap.deepResourceGrid.SetAt(pos, def, def?.deepCountPerCell ?? 0);
 		}
 
 
-		[DebugAction(DebugActionCategories.General, "Move selection to...", actionType = DebugActionType.ToolMap,  allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		[DebugAction(DebugActionCategories.General, "Move selection to...", actionType = DebugActionType.ToolMap, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void MoveSelection()
 		{
 			if (UI.MouseCell().InBounds(Find.CurrentMap))
@@ -218,37 +218,139 @@ namespace TDBug
 			}
 		}
 
+		//-----------
+		//Spawn needed materials for blueprints and bills:
+		//-----------
 
 		[DebugAction(DebugActionCategories.Spawning, allowedGameStates = AllowedGameStates.PlayingOnMap)]
-		public static void SpawnForBlueprints()
+		public static void SpawnNeededMaterials()
 		{
 			foreach (Thing thing in Find.CurrentMap.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint))
 				if (thing is IConstructible cons)
+				{
+					Log.Message($"Spawning for {thing}:");
 					SpawnMaterialsNear(cons.MaterialsNeeded(), thing.Position);
+				}
 
 			foreach (Thing thing in Find.CurrentMap.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame))
 				if (thing is IConstructible cons)
+				{
+					Log.Message($"Spawning for {thing}:");
 					SpawnMaterialsNear(cons.MaterialsNeeded(), thing.Position);
+				}
 
+			foreach (Thing thing in Find.CurrentMap.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver).ListFullCopy())  //ListFullCopy because we might spawn corpses that change this list
+				if (thing is Building_WorkTable worktable)
+				{
+					Log.Message($"Spawning for {thing}:");
+					foreach (Bill bill in worktable.BillStack)
+					{
+						Log.Message($"-Spawning for {bill}:");
+
+						foreach (var ing in bill.recipe.ingredients)
+						{
+							Log.Message($"--Spawning for {ing}:");
+							ThingDef mat = FindIngredient(bill, ing);
+							SpawnMaterialNear(mat, bill.RepeatCount() * ing.CountRequiredOfFor(mat, bill.recipe), thing.Position);
+						}
+					}
+				}
+
+		}
+
+		public static ThingDef FindIngredient(Bill bill, IngredientCount ing)
+		{
+			if (ing.IsFixedIngredient) return ing.FixedIngredient;
+
+			if (bill.ingredientFilter.AnyAllowedDef is ThingDef def) return def;
+
+			Log.Warning("Whoops, sorry, don't know what to spawn for that");
+			return ThingDefOf.WoodLog;
+		}
+
+		public static int RepeatCount(this Bill bill)
+		{
+			Bill_Production billP = bill as Bill_Production;
+			if (billP?.repeatMode == BillRepeatModeDefOf.Forever)
+			{
+				return 20;
+			}
+			if (billP?.repeatMode == BillRepeatModeDefOf.RepeatCount)
+			{
+				return billP.repeatCount;
+			}
+			if (billP?.repeatMode == BillRepeatModeDefOf.TargetCount)
+			{
+				float todo = billP.targetCount - billP.recipe.WorkerCounter.CountProducts(billP);
+				todo /= bill.recipe.products.FirstOrDefault()?.count ?? 1;
+				return UnityEngine.Mathf.CeilToInt(todo);
+			}
+			return 1;
 		}
 
 		public static void SpawnMaterialsNear(List<ThingDefCountClass> mats, IntVec3 pos)
 		{
-			foreach(var mat in mats)
+			foreach (var mat in mats)
+				SpawnMaterialNear(mat.thingDef, mat.count, pos);
+		}
+		public static void SpawnMaterialNear(ThingDef def, int total, IntVec3 pos)
+		{
+			Log.Message($"---Spawning {def}x{total}");
+			try
 			{
-				ThingDef def = mat.thingDef;
-				int total = mat.count;
 				while (total > 0)
 				{
-					Thing thing = ThingMaker.MakeThing(def);
+					if (def.IsCorpse)
+					{
+						SpawnCorpse(def, pos);
+						total--;
+						continue;
+					}
+					Thing thing = ThingMaker.MakeThing(def, GenStuff.DefaultStuffFor(def));
 
 					thing.stackCount = total > def.stackLimit ? def.stackLimit : total;
 					total -= thing.stackCount;
 
 					GenSpawn.Spawn(thing, pos, Find.CurrentMap);
 				}
-
+			}
+			catch(Exception e)
+			{
+				Log.Warning($"Sorry couldn't spawn that for some reason({e})");
 			}
 		}
+
+		// taken from SymbolResolver_DesiccatedCorpses
+		public static void SpawnCorpse(ThingDef corpseDef, IntVec3 spawnPosition)
+		{
+			ThingDef pawnDef = corpseDef.ingestible.sourceDef;
+			Pawn pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(pawnDef.race.AnyPawnKind));
+			if (!pawn.Dead)
+			{
+				pawn.Kill(null);
+			}
+			if (pawn.inventory != null)
+			{
+				pawn.inventory.DestroyAll();
+			}
+			if (pawn.apparel != null)
+			{
+				pawn.apparel.DestroyAll();
+			}
+			if (pawn.equipment != null)
+			{
+				pawn.equipment.DestroyAllEquipment();
+			}
+			pawn.Corpse.Age = 1000;
+			pawn.relations.hidePawnRelations = true;
+			GenSpawn.Spawn(pawn.Corpse, spawnPosition, Find.CurrentMap);
+			pawn.Corpse.GetComp<CompRottable>().RotProgress += pawn.Corpse.Age;
+		}
+
+		//-----------
+		//-----------
+		//-----------
+
+
 	}
 }
