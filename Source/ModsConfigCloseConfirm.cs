@@ -32,10 +32,9 @@ namespace TDBug
 	[HarmonyPatch(typeof(Page_ModsConfig), "PostClose")]
 	class CloseConfirm
 	{
-		public static FieldInfo activeHash = AccessTools.Field(typeof(Page_ModsConfig), "activeModsWhenOpenedHash");
-		public static bool Prefix(Page_ModsConfig __instance)
+		public static bool Prefix(Page_ModsConfig __instance, int ___activeModsWhenOpenedHash)
 		{
-			if ((int)activeHash.GetValue(__instance) != ModLister.InstalledModsListHash(true))
+			if (___activeModsWhenOpenedHash != ModLister.InstalledModsListHash(true))
 			{
 				SoundDefOf.Tick_High.PlayOneShotOnCamera(null);
 				Action confirm = delegate

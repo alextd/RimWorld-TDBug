@@ -24,15 +24,20 @@ namespace TDBug
 			return Transpilers.MethodReplacer(instructions, DoBottomButtonsInfo, DoBottomButtonsDebug);
 		}
 
+		//protected void DoBottomButtons(Rect rect, string nextLabel = null, string midLabel = null, Action midAct = null, bool showNext = true, bool doNextOnKeypress = true)
+		public delegate void DoBottomButtonsDel(Page page, Rect rect, string nextLabel = null, string midLabel = null, Action midAct = null, bool showNext = true, bool doNextOnKeypress = true);
+		public static DoBottomButtonsDel DoBottomButtons =
+			AccessTools.MethodDelegate<DoBottomButtonsDel>(DoBottomButtonsInfo);
+
 		public static void DoBottomButtonsDebug(Page page, Rect rect, string nextLabel = null, string midLabel = null, Action midAct = null, bool showNext = true, bool doNextOnKeypress = true)
 		{
 			if (Prefs.DevMode)
 			{
 				Action debugAction = QuickScenarioConfiguration;
-				DoBottomButtonsInfo.Invoke(page, new object[] { rect, nextLabel, "Quickstart", debugAction, showNext, doNextOnKeypress });
+				DoBottomButtons(page, rect, nextLabel, "Quickstart", debugAction, showNext, doNextOnKeypress );
 			}
 			else
-				DoBottomButtonsInfo.Invoke(page, new object[] { rect, nextLabel, midLabel, midAct, showNext, doNextOnKeypress });
+				DoBottomButtons(page, rect, nextLabel, midLabel, midAct, showNext, doNextOnKeypress );
 		}
 
 		public static void QuickScenarioConfiguration()

@@ -14,14 +14,6 @@ namespace TDBug
 	//protected override int HighlightedIndex
 	static class DebugActionHighlightExactMatch
 	{
-		public static MethodInfo FilterAllowsInfo = AccessTools.Method(typeof(Dialog_OptionLister), "FilterAllows");
-		public static bool FilterAllows(Dialog_DebugOptionLister window, string label) =>
-			(bool)FilterAllowsInfo.Invoke(window, new object[] { label });
-
-		public static FieldInfo filterInfo = AccessTools.Field(typeof(Dialog_OptionLister), "filter");
-		public static string GetFilter(this Dialog_OptionLister window) =>
-			(string)filterInfo.GetValue(window);
-
 		public static bool FilterExactlyMatches(string filter, string label)
 		{
 			if (label.StartsWith("T: "))
@@ -30,14 +22,14 @@ namespace TDBug
 		}
 
 		//After getting highlighted index, check if it exactly matches one and highlight that instead.
-		public static void Postfix(ref int __result, Dialog_DebugActionsMenu __instance, List<Dialog_DebugActionsMenu.DebugActionOption> ___debugActions, ref int ___prioritizedHighlightedIndex)
+		public static void Postfix(ref int __result, Dialog_DebugActionsMenu __instance, string ___filter, List<Dialog_DebugActionsMenu.DebugActionOption> ___debugActions, ref int ___prioritizedHighlightedIndex)
 		{
-			if (FilterExactlyMatches(__instance.GetFilter(), ___debugActions[__result].label))
+			if (FilterExactlyMatches(___filter, ___debugActions[__result].label))
 				return;
 
 			for (int i = 0; i < ___debugActions.Count; i++)
 			{
-				if (FilterExactlyMatches(__instance.GetFilter(), ___debugActions[i].label))
+				if (FilterExactlyMatches(___filter, ___debugActions[i].label))
 				{
 					___prioritizedHighlightedIndex = i;
 					__result = i;
