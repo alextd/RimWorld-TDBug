@@ -7,6 +7,7 @@ using System.Reflection.Emit;
 using Verse;
 using HarmonyLib;
 using RimWorld;
+using UnityEngine;
 
 namespace TDBug
 {
@@ -98,10 +99,21 @@ namespace TDBug
 		}
 
 
-		//private static void OffsetNeed(NeedDef nd, float offsetPct)
-		public delegate void OffsetNeedDel(NeedDef nd, float offsetPct);
-		public static OffsetNeedDel OffsetNeed =
-			AccessTools.MethodDelegate<OffsetNeedDel>(AccessTools.Method(typeof(DebugToolsPawns), "OffsetNeed"));
+		//1.4 remove OffsetNeed debug action ? ? 
+		private static void OffsetNeed(NeedDef nd, float offsetPct)
+		{
+			foreach (Pawn item in (from t in Find.CurrentMap.thingGrid.ThingsAt(UI.MouseCell())
+														 where t is Pawn
+														 select t).Cast<Pawn>())
+			{
+				Need need = item.needs.TryGetNeed(nd);
+				if (need != null)
+				{
+					need.CurLevel += offsetPct * need.MaxLevel * (Event.current.shift ? -1 : 1);
+					DebugActionsUtility.DustPuffFrom(item);
+				}
+			}
+		}
 
 		[DebugAction(DebugActionCategories.Pawns, "Need -20% (by def)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void AddNeed()
