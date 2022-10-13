@@ -57,15 +57,14 @@ namespace TDBug
 		}
 
 
+		static List<Hediff_Injury> injuries = new();
 		[DebugAction(DebugActionCategories.Pawns, null, actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void FullHeal(Pawn p)
 		{
-			foreach (Hediff_Injury hediff_Injury in (from x in p.health.hediffSet.GetHediffs<Hediff_Injury>()
-																							 where x.CanHealNaturally() || x.CanHealFromTending()
-																							 select x))
+			p.health.hediffSet.GetHediffs<Hediff_Injury>(ref injuries);//passing by ref even though method doesn't use it
+			foreach (Hediff_Injury hediff_Injury in injuries.Where(x => x.CanHealNaturally() || x.CanHealFromTending()))
 			{
 				hediff_Injury.Heal(10000f);//probably enough
-
 			}
 		}
 

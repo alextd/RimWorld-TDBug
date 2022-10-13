@@ -58,7 +58,7 @@ namespace TDBug
 
 	//Reverse order for TDKeyBindingDefOf.Dev_BackSelectedDebugAction.KeyDownEvent
 	//protected override void ChangeHighlightedOption()
-	[HarmonyPatch(typeof(Dialog_DebugActionsMenu), "ChangeHighlightedOption")]
+	[HarmonyPatch(typeof(Dialog_DebugOptionListLister), "ChangeHighlightedOption")]
 	public static class ReverseChangeOrder
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

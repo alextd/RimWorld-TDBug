@@ -10,7 +10,7 @@ using HarmonyLib;
 
 namespace TDBug
 {
-	[HarmonyPatch(typeof(Dialog_DebugActionsMenu), "HighlightedIndex", MethodType.Getter)]
+	[HarmonyPatch(typeof(Dialog_Debug), nameof(Dialog_Debug.HighlightedIndex), MethodType.Getter)]
 	//protected override int HighlightedIndex
 	static class DebugActionHighlightExactMatch
 	{
@@ -22,14 +22,14 @@ namespace TDBug
 		}
 
 		//After getting highlighted index, check if it exactly matches one and highlight that instead.
-		public static void Postfix(ref int __result, Dialog_DebugActionsMenu __instance, string ___filter, List<Dialog_DebugActionsMenu.DebugActionOption> ___debugActions, ref int ___prioritizedHighlightedIndex)
+		public static void Postfix(ref int __result, Dialog_Debug __instance, string ___filter, DebugTabMenu ___currentTabMenu, ref int ___prioritizedHighlightedIndex)
 		{
-			if (FilterExactlyMatches(___filter, ___debugActions[__result].label))
+			if (FilterExactlyMatches(___filter, ___currentTabMenu.LabelAtIndex(__result)))
 				return;
 
-			for (int i = 0; i < ___debugActions.Count; i++)
+			for (int i = 0; i < ___currentTabMenu.Count; i++)
 			{
-				if (FilterExactlyMatches(___filter, ___debugActions[i].label))
+				if (FilterExactlyMatches(___filter, ___currentTabMenu.LabelAtIndex(i)))
 				{
 					___prioritizedHighlightedIndex = i;
 					__result = i;

@@ -85,7 +85,6 @@ namespace TDBug
 			List<Type> typesToMangle = new()
 			{
 				typeof(Dialog_DebugOptionLister),
-				typeof(Dialog_DebugActionsMenu),
 				typeof(DebugActionsIdeo),
 				//DebugActionsMapManagement Eh, Transfer doesn't need this
 				typeof(DebugTools_Health),
