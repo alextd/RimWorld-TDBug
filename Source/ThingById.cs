@@ -57,7 +57,7 @@ namespace TDBug
 		{
 			if (Current.Game == null) return;
 
-			Rect idRect = new Rect(inRect.x, inRect.y + headerHeight, inRect.width, headerHeight);
+			Rect idRect = new Rect(inRect.x, inRect.y + headerHeight + EditWindow_DebugInspector.CopyTextHeight, inRect.width, headerHeight);
 			int prevId = idToFind;
 			Widgets.TextFieldNumeric(idRect.LeftHalf(), ref idToFind, ref idBuffer);
 			if (idToFind != prevId)

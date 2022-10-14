@@ -10,15 +10,6 @@ using HarmonyLib;
 
 namespace TDBug
 {
-	[HarmonyPatch(typeof(Page_ModsConfig), MethodType.Constructor)]
-	class CloseEsc
-	{
-		public static void Postfix(Page_ModsConfig __instance)
-		{
-			__instance.closeOnCancel = true;
-		}
-	}
-	
 	[HarmonyPatch(typeof(Page_ModsConfig), "PreOpen")]
 	class OpenSaveList
 	{
@@ -32,9 +23,9 @@ namespace TDBug
 	[HarmonyPatch(typeof(Page_ModsConfig), "PostClose")]
 	class CloseConfirm
 	{
-		public static bool Prefix(Page_ModsConfig __instance, int ___activeModsWhenOpenedHash)
+		public static bool Prefix(Page_ModsConfig __instance, int ___activeModsWhenOpenedHash, bool ___discardChanges)
 		{
-			if (___activeModsWhenOpenedHash != ModLister.InstalledModsListHash(true))
+			if (!___discardChanges && ___activeModsWhenOpenedHash != ModLister.InstalledModsListHash(true))
 			{
 				SoundDefOf.Tick_High.PlayOneShotOnCamera(null);
 				Action confirm = delegate

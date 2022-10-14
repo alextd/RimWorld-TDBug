@@ -12,10 +12,10 @@ namespace TDBug
 	//The original filter method checked an exact substring so "pawn spawn" wouldn't find "spawn pawn"
 	//Let's separate by word
 	[HarmonyPatch(typeof(Dialog_OptionLister), "FilterAllows")]
-	static class FilterSplitOnSpace
+	public static class FilterSplitOnSpace
 	{
 		//protected bool FilterAllows(string label)
-		static void Postfix(ref bool __result, string label, string ___filter)
+		public static void Postfix(ref bool __result, string label, string ___filter)
 		{
 			if (__result) return;
 
@@ -23,5 +23,14 @@ namespace TDBug
 				__result = ___filter.Split(' ', '\t').All(
 				f => label.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0);
 		}
+	}
+
+	// 1.4 Added Dialog_Debug for the main debug actions menu, Dialog_OptionLister kept for various sub-option menus
+	[HarmonyPatch(typeof(Dialog_Debug), "FilterAllows")]
+	static class FilterSplitOnSpace_Dialog_Debug
+	{
+		//protected bool FilterAllows(string label)
+		static void Postfix(ref bool __result, string label, string ___filter) =>
+			FilterSplitOnSpace.Postfix(ref __result, label, ___filter);
 	}
 }

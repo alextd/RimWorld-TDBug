@@ -29,25 +29,6 @@ namespace TDBug
 		*/
 
 
-		[DebugAction(DebugActionCategories.Spawning, "Try place near full stack...", allowedGameStates = AllowedGameStates.PlayingOnMap)]
-		public static void FullStack()
-		{
-			//TryPlaceOptionsForStackCount with -1 almost works but I want def.stackLimit >= 2, so copy it all here:
-			List<DebugMenuOption> list = new List<DebugMenuOption>();
-			foreach (ThingDef current in DefDatabase<ThingDef>.AllDefs
-				.Where(def => DebugThingPlaceHelper.IsDebugSpawnable(def) && def.stackLimit >= 2))
-			{
-				ThingDef localDef = current;
-				list.Add(new DebugMenuOption(localDef.LabelCap, DebugMenuOptionMode.Tool, delegate
-				{
-					DebugThingPlaceHelper.DebugSpawn(localDef, UI.MouseCell());
-				}));
-			}
-
-			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
-		}
-
-
 		[DebugAction(DebugActionCategories.General, null, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void DestroyAllSelected()
 		{
@@ -70,24 +51,6 @@ namespace TDBug
 		}
 
 
-		[DebugAction(DebugActionCategories.General, "Make roof (by def)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
-		public static void MakeRoofByDef()
-		{
-			List<DebugMenuOption> list = new List<DebugMenuOption>();
-			foreach (RoofDef current in DefDatabase<RoofDef>.AllDefs)
-			{
-				RoofDef localDef = current;
-				list.Add(new DebugMenuOption(localDef.LabelCap, DebugMenuOptionMode.Tool, delegate
-				{
-					foreach (var pos in CellRect.CenteredOn(UI.MouseCell(), 1))
-						Find.CurrentMap.roofGrid.SetRoof(pos, localDef);
-				}));
-			}
-
-			Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
-		}
-
-
 		[DebugAction(DebugActionCategories.Pawns, "Add selected things to inventory", actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void AddSelToInv(Pawn p)
 		{
@@ -99,7 +62,7 @@ namespace TDBug
 		}
 
 
-		//1.4 remove OffsetNeed debug action ? ? 
+		//1.4 removed OffsetNeed debug action ? ? 
 		private static void OffsetNeed(NeedDef nd, float offsetPct)
 		{
 			foreach (Pawn item in (from t in Find.CurrentMap.thingGrid.ThingsAt(UI.MouseCell())
@@ -115,7 +78,7 @@ namespace TDBug
 			}
 		}
 
-		[DebugAction(DebugActionCategories.Pawns, "Need -20% (by def)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		[DebugAction(DebugActionCategories.Pawns, "Need -20% (shift:+)", allowedGameStates = AllowedGameStates.PlayingOnMap)]
 		public static void AddNeed()
 		{
 			List<DebugMenuOption> list = new List<DebugMenuOption>();

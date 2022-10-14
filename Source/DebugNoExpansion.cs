@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using Verse;
 
-
+/*
+ * Do I really want this
 namespace TDBug
 {
 	[HarmonyPatch(typeof(DebugActionAttribute), nameof(DebugActionAttribute.IsAllowedInCurrentGameState), MethodType.Getter)]
@@ -33,3 +34,4 @@ namespace TDBug
 		}
 	}
 }
+*/
