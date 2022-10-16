@@ -38,6 +38,7 @@ namespace TDBug
 			canTargetFires = true,//have to turn some on
 			canTargetItems = true,
 			canTargetPlants = true,
+			mapObjectTargetsMustBeAutoAttackable = false,
 			//all other defaults are fine. Why is the default not "all things" I dunno.
 		};
 
