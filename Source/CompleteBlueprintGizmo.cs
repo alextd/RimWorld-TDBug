@@ -19,26 +19,47 @@ namespace TDBug
 	class CompleteBlueprintGizmo : Command
 	{
 		//public override IEnumerable<Gizmo> GetGizmos()
-		public static void Postfix(ref IEnumerable<Gizmo> __result, ThingWithComps __instance)
+		public static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, ThingWithComps __instance)
 		{
-			if (!Prefs.DevMode || !DebugSettings.godMode) return;
+			foreach (var r in __result)
+				yield return r;
 
-			List<Gizmo> result = __result.ToList();
-			Map map = __instance.Map;
-			Pawn builder = map.mapPawns.FreeColonistsSpawned.FirstOrDefault(p =>
-				p.workSettings.WorkIsActive(WorkTypeDefOf.Construction) &&
-				!p.WorkTypeIsDisabled(WorkTypeDefOf.Construction));
+			if (!Prefs.DevMode || !DebugSettings.godMode) yield break;
+
+			if (__instance is Frame frame)
+				yield return new Command_Action()
+				{
+					defaultLabel = "Fill",
+					icon = Tex.frame,
+					defaultDesc = "Fill Frame with needed materials",
+					action = delegate
+					{
+						var thingsToAdd = frame.MaterialsNeeded().Select(count =>
+						{
+							var thing = ThingMaker.MakeThing(count.thingDef);
+							thing.stackCount = count.count;
+							return thing;
+						});
+						frame.GetDirectlyHeldThings().TryAddRangeOrTransfer(thingsToAdd, destroyLeftover: true);
+					}
+				};
 
 
 			if (__instance is Blueprint || __instance is Frame)
-				result.Add(new Command_Action()
+			{
+				Map map = __instance.MapHeld;
+				Pawn builder = map?.mapPawns.FreeColonistsSpawned.FirstOrDefault(p =>
+					p.workSettings.WorkIsActive(WorkTypeDefOf.Construction) &&
+					!p.WorkTypeIsDisabled(WorkTypeDefOf.Construction));
+
+				yield return new Command_Action()
 				{
 					defaultLabel = "Complete",
 					icon = TexCommand.Install,
 					defaultDesc = "Complete this building",
 					action = delegate
 					{
-						if(builder == null)
+						if (builder == null)
 						{
 							Log.Warning("TDBug can't do construction without a colonist to credit it with");
 							return;
@@ -73,44 +94,26 @@ namespace TDBug
 							install.TryReplaceWithSolidThing(builder, out Thing thing, out bool ended);
 						}
 					}
-				});
+				};
 
-			if (__instance is Blueprint_Build bp)
-				result.Add(new Command_Action()
-				{
-					defaultLabel = "Make Frame",
-					icon = Tex.frame,
-					defaultDesc = "Make into a frame",
-					action = delegate
+				if (__instance is Blueprint_Build bp)
+					yield return new Command_Action()
 					{
-						if (builder == null)
+						defaultLabel = "Make Frame",
+						icon = Tex.frame,
+						defaultDesc = "Make into a frame",
+						action = delegate
 						{
-							Log.Warning("TDBug can't do construction without a colonist to credit it with");
-							return;
+							if (builder == null)
+							{
+								Log.Warning("TDBug can't do construction without a colonist to credit it with");
+								return;
+							}
+							bp.TryReplaceWithSolidThing(builder, out Thing thing, out bool dummy);
+							Find.Selector.Select(thing);
 						}
-						bp.TryReplaceWithSolidThing(builder, out Thing thing, out bool dummy);
-						Find.Selector.Select(thing);
-					}
-				});
-
-			if (__instance is Frame frame)
-				result.Add(new Command_Action()
-				{
-					defaultLabel = "Fill",
-					icon = Tex.frame,
-					defaultDesc = "Fill Frame with needed materials",
-					action = delegate
-					{
-						var thingsToAdd = frame.MaterialsNeeded().Select(count =>
-						{ var thing = ThingMaker.MakeThing(count.thingDef);
-							thing.stackCount = count.count;
-							return thing;
-						});
-						frame.GetDirectlyHeldThings().TryAddRangeOrTransfer(thingsToAdd, destroyLeftover: true);
-					}
-				});
-
-			__result = result;
+					};
+			}
 		}
 	}
 }
