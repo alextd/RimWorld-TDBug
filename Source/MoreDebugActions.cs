@@ -237,7 +237,10 @@ namespace TDBug
 		{
 			if (ing.IsFixedIngredient) return ing.FixedIngredient;
 
-			if (bill.ingredientFilter.AnyAllowedDef is ThingDef def) return def;
+			if (ing.filter.AllowedThingDefs.FirstOrDefault(
+				d => bill.recipe.fixedIngredientFilter.Allows(d) &&
+					bill.ingredientFilter.Allows(d)) is ThingDef def)
+				return def;
 
 			Log.Warning("Whoops, sorry, don't know what to spawn for that");
 			return ThingDefOf.WoodLog;
