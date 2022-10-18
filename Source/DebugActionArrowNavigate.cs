@@ -28,10 +28,8 @@ namespace TDBug
 
 		public static void Postfix(Dialog_DebugOptionLister __instance)
 		{
-			Log.Message($"DoListingItems :: {TDKeyBindingDefOf.Dev_BackSelectedDebugAction}");
 			if (TDKeyBindingDefOf.Dev_BackSelectedDebugAction.IsDownEvent)
 			{
-				Log.Message($"DoListingItems :: {TDKeyBindingDefOf.Dev_BackSelectedDebugAction} AYE");
 				ChangeHighlightedOption(__instance);
 			}
 		}
