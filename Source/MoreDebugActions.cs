@@ -193,6 +193,29 @@ namespace TDBug
 			}
 		}
 
+
+		[DebugAction(DebugActionCategories.Pawns, null, allowedGameStates = AllowedGameStates.PlayingOnMap)]
+		public static void ImprisonSelected()
+		{
+			if (UI.MouseCell().InBounds(Find.CurrentMap))
+			{
+				IntVec3 pos = UI.MouseCell();
+				foreach (Pawn pawn in Find.Selector.SelectedObjectsListForReading.Where(s => s is Pawn).ToList())
+				{
+					if (pawn.guest.Released)
+					{
+						pawn.guest.Released = false;
+						pawn.guest.interactionMode = PrisonerInteractionModeDefOf.NoInteraction;
+						GenGuest.RemoveHealthyPrisonerReleasedThoughts(pawn);
+					}
+					if (!pawn.IsPrisonerOfColony)
+					{
+						pawn.guest.CapturedBy(Faction.OfPlayer, pawn);
+					}
+				}
+			}
+		}
+
 		//-----------
 		//Spawn needed materials for blueprints and bills:
 		//-----------
