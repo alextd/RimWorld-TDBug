@@ -11,6 +11,24 @@ using UnityEngine;
 
 namespace TDBug
 {
+
+
+
+	[HarmonyPatch(typeof(WidgetRow), nameof(WidgetRow.ButtonRect))]
+	public static class ButtonrectHeightFixer
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			foreach (var inst in instructions)
+			{
+				if (inst.operand is float f && f == 24f)
+					inst.operand = 22f;
+
+				yield return inst;
+			}
+		}
+	}
+
 	/*
 	 * Fix bug where a draggable window preventing reorderable widgets from reordering
 	 * The Event.current.mousePosition of the reorderable was always adjusted to have not moved
