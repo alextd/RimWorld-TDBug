@@ -230,6 +230,43 @@ namespace TDBug
 	}
 
 
+	// For good measure while I'm here, fix the absRect in ReorderableWidget.NewGroup which threw out the rect position and used zero.
+	[HarmonyPatch(typeof(ReorderableWidget), nameof(ReorderableWidget.NewGroup))]
+	public static class FixNewGroupAbsRect
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			MethodInfo VectorZeroInfo = AccessTools.PropertyGetter(typeof(Vector2), nameof(Vector2.zero));
+
+			foreach (var inst in instructions)
+			{
+				if(inst.Calls(VectorZeroInfo))
+				{
+					yield return new CodeInstruction(OpCodes.Ldarga_S, 2); // ref rect, as this
+					yield return new CodeInstruction(OpCodes.Call, AccessTools.PropertyGetter(typeof(Rect), nameof(Rect.position))); // rect.position
+				}
+				else
+					yield return inst;
+			}
+		}
+	}
+
+	// OF COURSE with the above patch, the vanilla code passes the wrong rect into NewGroup. So let's fix that.
+	// The DoModList calls BeginScroll then immediately NewGroup, so the GUI coords were at 0,0. 
+	// But the rect passed in could be elsewhere. Just nudge that rect to 0,0 for the newgroup.
+	[HarmonyPatch(typeof(Page_ModsConfig), nameof(Page_ModsConfig.DoModList))]
+	public static class FixModsConfigRect
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+			Transpilers.MethodReplacer(instructions,
+				AccessTools.Method(typeof(ReorderableWidget), nameof(ReorderableWidget.NewGroup)),
+				AccessTools.Method(typeof(FixModsConfigRect), nameof(NewGroupWithRectAtZero)));
+
+		
+		public static int NewGroupWithRectAtZero(Action<int, int> reorderedAction, ReorderableDirection direction, Rect rect, float drawLineExactlyBetween_space = -1f, Action<int, Vector2> extraDraggedItemOnGUI = null, bool playSoundOnStartReorder = true) =>
+			ReorderableWidget.NewGroup(reorderedAction, direction, rect.AtZero(), drawLineExactlyBetween_space, extraDraggedItemOnGUI, playSoundOnStartReorder);
+	}
+
 
 
 
