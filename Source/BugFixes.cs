@@ -14,13 +14,16 @@ namespace TDBug
 {
 	// It turns out that reorderable widgets, with multi-groups, and dragging onto an empty group, doesn't work in the game UI
 	// This is 100% because of the COLONIST BAR at the top center of the screen.
-	// For some reason its rect is the entire screen. This rect is only used for multi-group reordering which it doesn't even do
-	// The code would find what group's rect is "hovered" over to drop onto that group
-	// That works fine in the modlist, as you can even drop onto an empty modlist and it'll handle that
+	// For some reason its rect is the entire screen. This rect is only used for multi-group reordering which it doesn't even do.
+	// The code would find what group's rect is "hovered" over to drop onto that group.
+	// That works fine in the modlist, because there's no colonist bar, so you can drop onto an empty modlist and it'll handle that
 	// But when there's a goddamn colonist bar drawing after all your UI that says it takes up the entire screen,
 	// it hijacks all that and says I'M ON TOP, I GET THE REORDER DROP
 	// But then later it goes "oh wait, I'm not in your group, nevermind" and so nothing happens.
 	// All the code needs to do is NOT set the hoveredGroup is that group is not inthe multigroup for the dragged reorderable.
+
+	// SECOND. To support nested reordering areas. It has to do a few more checks about those rects. Which are done in the below patch
+	
 	/*
 	//[HarmonyPatch(typeof(ColonistBar), nameof(ColonistBar.Visible), MethodType.Getter)]
 	public static class NewFeature2
@@ -31,7 +34,7 @@ namespace TDBug
 		}
 	}
 
-	//[HarmonyPatch(typeof(ReorderableWidget), nameof(ReorderableWidget.ReorderableWidgetOnGUI_AfterWindowStack))]
+	[HarmonyPatch(typeof(ReorderableWidget), nameof(ReorderableWidget.ReorderableWidgetOnGUI_AfterWindowStack))]
 	public static class NewFeature
 	{
 		public static bool Prefix()
@@ -67,19 +70,41 @@ namespace TDBug
 				ReorderableWidget.StopDragging();
 			}
 			ReorderableWidget.lastInsertNear = ReorderableWidget.CurrentInsertNear(out ReorderableWidget.lastInsertNearLeft);
+			if (ReorderableWidget.lastInsertNear >= 0)
+				Log.Message($"STARTING with lastInsertNear = {ReorderableWidget.lastInsertNear} ; lastInsertNearLeft = {ReorderableWidget.lastInsertNearLeft} ; hoveredGroup = {ReorderableWidget.hoveredGroup} ; {(ReorderableWidget.hoveredGroup >= 0 ? ReorderableWidget.groups[ReorderableWidget.hoveredGroup].absRect:null)}");
 			ReorderableWidget.hoveredGroup = -1;
 			for (int j = 0; j < ReorderableWidget.groups.Count; j++)
 			{
-				if (ReorderableWidget.groups[j].absRect.Contains(Event.current.mousePosition))
+				// Original if statement didn't handle nested rects.
+				// if (ReorderableWidget.groups[j].absRect.Contains(Event.current.mousePosition))
+				if (ReorderableWidget.lastInsertNear >= 0)
+					Log.Message($@"
+					if ({ReorderableWidget.groups[j].absRect}.Contains({Event.current.mousePosition})
+					&&
+					({ReorderableWidget.lastInsertNear} == -1 ||
+					!{ReorderableWidget.groups[j].absRect}.Contains({ReorderableWidget.reorderables[ReorderableWidget.lastInsertNear<0?0: ReorderableWidget.lastInsertNear].absRect}))
+					&&
+					({ReorderableWidget.hoveredGroup} == -1 ||
+					{ReorderableWidget.groups[ReorderableWidget.hoveredGroup<0?0: ReorderableWidget.hoveredGroup].absRect}.Contains({ReorderableWidget.groups[j].absRect}))");
+				if (ReorderableWidget.groups[j].absRect.Contains(Event.current.mousePosition)
+					&&
+					(ReorderableWidget.lastInsertNear == -1 ||
+					!ReorderableWidget.groups[j].absRect.Contains(ReorderableWidget.reorderables[ReorderableWidget.lastInsertNear].absRect.ContractedBy(1))) 
+					&&
+					(ReorderableWidget.hoveredGroup == -1 ||
+					ReorderableWidget.groups[ReorderableWidget.hoveredGroup].absRect.Contains(ReorderableWidget.groups[j].absRect))
+)
 				{
-					//ReorderableWidget.hoveredGroup = j;
+					// Original if block directly set hoveredGroup without checking if it was in the multigroup
+					// ReorderableWidget.hoveredGroup = j;
+					if (ReorderableWidget.lastInsertNear >= 0)
+						Log.Message($" Could be {j} : {ReorderableWidget.groups[j].absRect}");
 					if (ReorderableWidget.lastInsertNear >= 0 && ReorderableWidget.AreInMultiGroup(j, ReorderableWidget.reorderables[ReorderableWidget.lastInsertNear].groupID) && ReorderableWidget.reorderables[ReorderableWidget.lastInsertNear].groupID != j)
 					{
-						ReorderableWidget.hoveredGroup = j; // < - this right here fixes it
-						Log.Message($"hoveredGroup = {ReorderableWidget.hoveredGroup} ; {ReorderableWidget.groups[j].absRect}");
 						ReorderableWidget.lastInsertNear = ReorderableWidget.FindLastReorderableIndexWithinGroup(j);
 						ReorderableWidget.lastInsertNearLeft = ReorderableWidget.lastInsertNear < 0;
-						Log.Message($"lastInsertNear = {ReorderableWidget.lastInsertNear};lastInsertNearLeft = {ReorderableWidget.lastInsertNearLeft}");
+						ReorderableWidget.hoveredGroup = j; // < - this right here fixes it
+						Log.Message($"  SETTING lastInsertNear = {ReorderableWidget.lastInsertNear}; lastInsertNearLeft = {ReorderableWidget.lastInsertNearLeft} ; hoveredGroup = {ReorderableWidget.hoveredGroup} ; {ReorderableWidget.groups[ReorderableWidget.hoveredGroup].absRect}");
 					}
 				}
 			}
@@ -88,26 +113,26 @@ namespace TDBug
 				ReorderableWidget.released = false;
 				if (ReorderableWidget.dragBegun && ReorderableWidget.draggingReorderable >= 0)
 				{
-					Log.Message($"dragBegun : hoveredGroup = {ReorderableWidget.hoveredGroup} lastInsertNear = {ReorderableWidget.lastInsertNear}; lastInsertNearLeft = {ReorderableWidget.lastInsertNearLeft}");
+					Log.Message($"RELEASED! : hoveredGroup = {ReorderableWidget.hoveredGroup} lastInsertNear = {ReorderableWidget.lastInsertNear}; lastInsertNearLeft = {ReorderableWidget.lastInsertNearLeft}");
 					int fromIndex = ReorderableWidget.GetIndexWithinGroup(ReorderableWidget.draggingReorderable);
 					int fromID = ReorderableWidget.reorderables[ReorderableWidget.draggingReorderable].groupID;
 					int toIndex = ((ReorderableWidget.lastInsertNear == ReorderableWidget.draggingReorderable) ? fromIndex : ((!ReorderableWidget.lastInsertNearLeft) ? (ReorderableWidget.GetIndexWithinGroup(ReorderableWidget.lastInsertNear) + 1) : ReorderableWidget.GetIndexWithinGroup(ReorderableWidget.lastInsertNear)));
 					int toID = -1;
-					Log.Message($"Thinking ({fromIndex}, {fromID}, {toIndex}, {toID})");
+					Log.Message($" Thinking ({fromIndex}, {fromID}, {toIndex}, {toID})");
 					if (ReorderableWidget.lastInsertNear >= 0)
 					{
 						toID = ReorderableWidget.reorderables[ReorderableWidget.lastInsertNear].groupID;
-						Log.Message($"toID = {toID}");
+						Log.Message($"  toID = {toID}");
 					}
 					if (ReorderableWidget.AreInMultiGroup(fromID, ReorderableWidget.hoveredGroup) && ReorderableWidget.hoveredGroup >= 0 && ReorderableWidget.hoveredGroup != toID)
 					{
 						toID = ReorderableWidget.hoveredGroup;
 						toIndex = ReorderableWidget.GetIndexWithinGroup(ReorderableWidget.FindLastReorderableIndexWithinGroup(toID)) + 1;
-						Log.Message($"toID = {toID}; toIndex = {toIndex}");
+						Log.Message($"  toID = {toID}; toIndex = {toIndex}");
 					}
 					if (ReorderableWidget.AreInMultiGroup(fromID, toID))
 					{
-						Log.Message($"Doing it for {fromID}: ({fromIndex}, {fromID}, {toIndex}, {toID}");
+						Log.Message($" Doing it for {fromID}: ({fromIndex}, {fromID}, {toIndex}, {toID}");
 						ReorderableWidget.GetMultiGroupByGroupID(fromID).Value.reorderedAction(fromIndex, fromID, toIndex, toID);
 						SoundDefOf.DropElement.PlayOneShotOnCamera();
 					}
@@ -138,13 +163,19 @@ namespace TDBug
 		}
 	}
 	*/
+	
 
-	// Simply move hoveredGroup = j into the if block that checks if we care about j, isn't that smart
+	// Simply move hoveredGroup = j into the if block which checks if we care about j, isn't that smart
+	// Secondly, add support for overlapping reorder rects.
+	// To support nested rects, also check if the new hoveredRect is inside the old one,
+	// and the "nearest" reorderable is not within the rect.
 	[HarmonyPatch(typeof(ReorderableWidget), nameof(ReorderableWidget.ReorderableWidgetOnGUI_AfterWindowStack))]
-	public static class FixHoveredGroupOustideMultigorup
+	public static class FixReorderableHoveredGroup
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{
+			MethodInfo ContainsInfo = AccessTools.Method(typeof(Rect), nameof(Rect.Contains), new Type[] { typeof(Vector2)});
+
 			FieldInfo hoveredGroupInfo = AccessTools.Field(typeof(ReorderableWidget), nameof(ReorderableWidget.hoveredGroup));
 			FieldInfo lastInsertNearLeftInfo = AccessTools.Field(typeof(ReorderableWidget), nameof(ReorderableWidget.lastInsertNearLeft));
 
@@ -152,7 +183,14 @@ namespace TDBug
 			int hoverGroupIndex = -1;
 			for (int i = 0; i < instList.Count; i++)
 			{
-				if (i < instList.Count - 1)
+				// 1. Check if hoveredRect contains new hoveredRect
+				if(instList[i].Calls(ContainsInfo))
+				{
+					instList[i].operand = AccessTools.Method(typeof(FixReorderableHoveredGroup), nameof(RectContainsMouseAndInsideOld));
+				}
+
+				// 2.a. Move 'hoveredGroup = j' inside the if
+				else if (i < instList.Count - 1)
 				{
 					//If it's not hoveredGroup = -1, it's gonna be hoveredGroup = j (local int)
 					if (instList[i + 1].StoresField(hoveredGroupInfo) && instList[i].opcode != OpCodes.Ldc_I4_M1)
@@ -166,11 +204,29 @@ namespace TDBug
 
 				if (instList[i].StoresField(lastInsertNearLeftInfo))
 				{
-					yield return instList[hoverGroupIndex];
-					yield return instList[hoverGroupIndex + 1];
+					// 2.b. Do 'hoveredGroup = j' only after 'lastInsertNearLeft = ...'
+					yield return instList[hoverGroupIndex]; // load j
+					yield return instList[hoverGroupIndex + 1]; // set static hoveredGroup = j
 				}
 			}
 		}
+
+		public static bool RectContainsMouseAndInsideOld(ref Rect checkIfHoveredRect, Vector2 mousePos) =>
+			// Vanilla check "Is the mouse over this group"
+			checkIfHoveredRect.Contains(mousePos)
+				&&
+			// Also Check that the closest reorderable row is not within this rect
+			(ReorderableWidget.lastInsertNear == -1 ||
+			!checkIfHoveredRect.Contains(ReorderableWidget.reorderables[ReorderableWidget.lastInsertNear].absRect.ContractedBy(1)))
+				&&
+			// Also Check that this rect is within the already hovered rect, if it exists.
+			(ReorderableWidget.hoveredGroup == -1 ||
+			ReorderableWidget.groups[ReorderableWidget.hoveredGroup].absRect.Contains(checkIfHoveredRect.ContractedBy(1)));
+
+
+
+		public static bool Contains(this Rect self, Rect rect) =>
+			self.Contains(rect.min) && self.Contains(rect.max);
 	}
 
 
