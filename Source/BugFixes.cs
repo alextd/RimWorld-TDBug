@@ -26,7 +26,7 @@ namespace TDBug
 	
 	/*
 	//[HarmonyPatch(typeof(ColonistBar), nameof(ColonistBar.Visible), MethodType.Getter)]
-	public static class NewFeature2
+	public static class NoBar
 	{
 		public static void Postfix(ref bool __result)
 		{
@@ -35,7 +35,7 @@ namespace TDBug
 	}
 
 	[HarmonyPatch(typeof(ReorderableWidget), nameof(ReorderableWidget.ReorderableWidgetOnGUI_AfterWindowStack))]
-	public static class NewFeature
+	public static class HijackAfterWindowStack
 	{
 		public static bool Prefix()
 		{
@@ -52,6 +52,7 @@ namespace TDBug
 				ReorderableWidget.StopDragging();
 				for (int i = 0; i < ReorderableWidget.reorderables.Count; i++)
 				{
+					Log.Message($"if (ReorderableWidget.reorderables[{i}].groupID  ({ ReorderableWidget.reorderables[i].groupID}) == { ReorderableWidget.groupClicked} && { ReorderableWidget.reorderables[i].rect} == {ReorderableWidget.clickedInRect}))");
 					if (ReorderableWidget.reorderables[i].groupID == ReorderableWidget.groupClicked && ReorderableWidget.reorderables[i].rect == ReorderableWidget.clickedInRect)
 					{
 						ReorderableWidget.draggingReorderable = i;
@@ -77,6 +78,7 @@ namespace TDBug
 			{
 				// Original if statement didn't handle nested rects.
 				// if (ReorderableWidget.groups[j].absRect.Contains(Event.current.mousePosition))
+				
 				if (ReorderableWidget.lastInsertNear >= 0)
 					Log.Message($@"
 					if ({ReorderableWidget.groups[j].absRect}.Contains({Event.current.mousePosition})
@@ -86,6 +88,7 @@ namespace TDBug
 					&&
 					({ReorderableWidget.hoveredGroup} == -1 ||
 					{ReorderableWidget.groups[ReorderableWidget.hoveredGroup<0?0: ReorderableWidget.hoveredGroup].absRect}.Contains({ReorderableWidget.groups[j].absRect}))");
+				
 				if (ReorderableWidget.groups[j].absRect.Contains(Event.current.mousePosition)
 					&&
 					(ReorderableWidget.lastInsertNear == -1 ||
@@ -343,7 +346,7 @@ namespace TDBug
 		public static void Prefix(int groupID)
 		{
 			if(Event.current.type == EventType.Repaint)
-				Log.Message($"if (ReorderableWidget.draggingReorderable({ReorderableWidget.ReorderableWidget.draggingReorderable}) != -1 && ReorderableWidget.dragBegun({ReorderableWidget.ReorderableWidget.dragBegun}) || (Vector2.Distance(clickedAt({ReorderableWidget.clickedAt}), Event.current.mousePosition({Event.current.mousePosition}) > 5f && ReorderableWidget.groupClicked({ReorderableWidget.ReorderableWidget.groupClicked}) == groupID({groupID})");
+				Log.Message($"if (ReorderableWidget.draggingReorderable({ReorderableWidget.draggingReorderable}) != -1 && ReorderableWidget.dragBegun({ReorderableWidget.dragBegun}) || (Vector2.Distance(clickedAt({ReorderableWidget.clickedAt}), Event.current.mousePosition({Event.current.mousePosition}) > 5f && ReorderableWidget.groupClicked({ReorderableWidget.groupClicked}) == groupID({groupID})");
 
 		}
 	}
@@ -353,13 +356,13 @@ namespace TDBug
 	{
 		public static void Prefix()
 		{
-			if (Event.current.type == EventType.Repaint && ReorderableWidget.ReorderableWidget.clicked)
-				Log.Message($"ReorderableWidgetOnGUI_AfterWindowStack Repaint : ReorderableWidget.clicked = {ReorderableWidget.ReorderableWidget.clicked}");
+			if (Event.current.type == EventType.Repaint && ReorderableWidget.clicked)
+				Log.Message($"ReorderableWidgetOnGUI_AfterWindowStack Repaint : ReorderableWidget.clicked = {ReorderableWidget.clicked}");
 		}
 
 		public static void Postfix()
 		{
-			Log.Message($"ReorderableWidgetOnGUI_AfterWindowStack Post: ReorderableWidget.draggingReorderable = {ReorderableWidget.ReorderableWidget.draggingReorderable}, ReorderableWidget.groupClicked={ReorderableWidget.ReorderableWidget.groupClicked}, ReorderableWidget.lastInsertNear = {ReorderableWidget.ReorderableWidget.lastInsertNear}, ReorderableWidget.hoveredGroup = {ReorderableWidget.ReorderableWidget.hoveredGroup}");
+			Log.Message($"ReorderableWidgetOnGUI_AfterWindowStack Post: ReorderableWidget.draggingReorderable = {ReorderableWidget.draggingReorderable}, ReorderableWidget.groupClicked={ReorderableWidget.groupClicked}, ReorderableWidget.lastInsertNear = {ReorderableWidget.lastInsertNear}, ReorderableWidget.hoveredGroup = {ReorderableWidget.hoveredGroup}");
 			
 		}
 	}
@@ -372,7 +375,7 @@ namespace TDBug
 		public static void Postfix(int groupID, Rect rect)
 		{
 			if (Event.current.type != EventType.Repaint && Event.current.type != EventType.Layout)
-				Log.Message($"Reorderable ReorderableWidget.clicked = {ReorderableWidget.ReorderableWidget.clicked} : {groupID} / {rect}");
+				Log.Message($"Reorderable ReorderableWidget.clicked = {ReorderableWidget.clicked} : {groupID} / {rect}");
 		}
 	}
 
@@ -401,12 +404,12 @@ namespace TDBug
 		public static void LogEvent1()
 		{
 			if (Event.current.type != EventType.Repaint && Event.current.type != EventType.Layout)
-				Log.Message($"Event b4 is {Event.current} :: ReorderableWidget.clicked = {ReorderableWidget.ReorderableWidget.clicked}");
+				Log.Message($"Event b4 is {Event.current} :: ReorderableWidget.clicked = {ReorderableWidget.clicked}");
 		}
 		public static void LogEvent2()
 		{
 			if (Event.current.type != EventType.Repaint && Event.current.type != EventType.Layout)
-				Log.Message($"Event af is {Event.current} :: ReorderableWidget.clicked = {ReorderableWidget.ReorderableWidget.clicked}");
+				Log.Message($"Event af is {Event.current} :: ReorderableWidget.clicked = {ReorderableWidget.clicked}");
 		}
 	}
 	*/
