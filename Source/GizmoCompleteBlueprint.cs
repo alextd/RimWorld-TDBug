@@ -16,7 +16,7 @@ namespace TDBug
 	}
 
 	[HarmonyPatch(typeof(ThingWithComps), "GetGizmos")]
-	class CompleteBlueprintGizmo : Command
+	class GizmoCompleteBlueprint : Command
 	{
 		//public override IEnumerable<Gizmo> GetGizmos()
 		public static IEnumerable<Gizmo> Postfix(IEnumerable<Gizmo> __result, ThingWithComps __instance)
