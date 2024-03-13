@@ -205,7 +205,7 @@ namespace TDBug
 					if (pawn.guest.Released)
 					{
 						pawn.guest.Released = false;
-						pawn.guest.interactionMode = PrisonerInteractionModeDefOf.NoInteraction;
+						pawn.guest.interactionMode = PrisonerInteractionModeDefOf.MaintainOnly;
 						GenGuest.RemoveHealthyPrisonerReleasedThoughts(pawn);
 					}
 					if (!pawn.IsPrisonerOfColony)
@@ -227,14 +227,14 @@ namespace TDBug
 				if (thing is IConstructible cons)
 				{
 					Log.Message($"Spawning for {thing}:");
-					SpawnMaterialsNear(cons.MaterialsNeeded(), thing.Position);
+					SpawnMaterialsNear(cons.TotalMaterialCost(), thing.Position);
 				}
 
 			foreach (Thing thing in Find.CurrentMap.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame))
 				if (thing is IConstructible cons)
 				{
 					Log.Message($"Spawning for {thing}:");
-					SpawnMaterialsNear(cons.MaterialsNeeded(), thing.Position);
+					SpawnMaterialsNear(cons.TotalMaterialCost(), thing.Position);
 				}
 
 			foreach (Thing thing in Find.CurrentMap.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver).ListFullCopy())  //ListFullCopy because we might spawn corpses that change this list

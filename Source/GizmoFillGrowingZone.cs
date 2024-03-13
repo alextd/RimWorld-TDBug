@@ -52,7 +52,7 @@ namespace TDBug
 							plant.Growth = 0.0001f;
 							plant.sown = true;
 
-							map.mapDrawer.MapMeshDirty(plant.Position, MapMeshFlag.Things);
+							map.mapDrawer.MapMeshDirty(plant.Position, MapMeshFlagDefOf.Things);
 						}
 					}
 				}
@@ -73,7 +73,7 @@ namespace TDBug
 						{
 							plant.Growth = 1;
 
-							map.mapDrawer.MapMeshDirty(plant.Position, MapMeshFlag.Things);
+							map.mapDrawer.MapMeshDirty(plant.Position, MapMeshFlagDefOf.Things);
 						}
 					}
 				}

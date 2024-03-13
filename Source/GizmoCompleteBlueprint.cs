@@ -34,7 +34,8 @@ namespace TDBug
 					defaultDesc = "Fill Frame with needed materials",
 					action = delegate
 					{
-						var thingsToAdd = frame.MaterialsNeeded().Select(count =>
+						//1.5 todo: don't overdo it.
+						var thingsToAdd = frame.TotalMaterialCost().Select(count =>
 						{
 							var thing = ThingMaker.MakeThing(count.thingDef);
 							thing.stackCount = count.count;
