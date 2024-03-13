@@ -65,7 +65,7 @@ namespace TDBug
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
 			Transpilers.MethodReplacer(instructions,
-				AccessTools.Method(typeof(Widgets), nameof(Widgets.TextField), new Type[] { typeof(Rect), typeof(string) }),
+				AccessTools.Method(typeof(DevGUI), nameof(DevGUI.TextField), new Type[] { typeof(Rect), typeof(string) }),
 				AccessTools.Method(typeof(DontUseArrowEvent), nameof(TextFieldIfNoArrow)));
 
 		//public static string TextField(Rect rect, string text)
@@ -80,7 +80,7 @@ namespace TDBug
 			//TextField will consume the event and set type to Used instead of KeyDown.
 			//Plus, up/down just moves text input line and that's honestly annoying
 
-			return Widgets.TextField(rect, text);
+			return DevGUI.TextField(rect, text);
 		}
 	}
 
