@@ -11,7 +11,7 @@ using HarmonyLib;
 namespace TDBug
 {
 	/*
-	 *Y U NO WORK
+	 *Y U NO WORK probably not patched soon enough
 	[HarmonyPatch(typeof(DebugActionAttribute), MethodType.Constructor)]
 	static class DebugMenuNoSecondPage
 	{

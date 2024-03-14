@@ -9,6 +9,8 @@ using UnityEngine;
 
 namespace TDBug
 {
+	// Add an option "Draw Reorderable Boxes" to draw a border on menu items that canbe drag-reordered using ReorderableWidget
+
 	public static class ReorderBoxes
 	{
 		public static bool drawReorderableBoxes;
