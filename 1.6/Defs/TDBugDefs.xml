@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Defs>
+  
+  <KeyBindingDef>
+    <defName>Dev_BackSelectedDebugAction</defName>
+    <label>change selected debug action up</label>
+    <category>DebugMenu</category>
+    <defaultKeyCodeB>UpArrow</defaultKeyCodeB>
+    <devModeOnly>true</devModeOnly>
+  </KeyBindingDef>
+
+</Defs>

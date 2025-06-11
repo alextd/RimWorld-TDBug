@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\1.5\Assemblies\</OutputPath>
+    <OutputPath>..\1.6\Assemblies\</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,7 +28,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\1.5\Assemblies\</OutputPath>
+    <OutputPath>..\1.6\Assemblies\</OutputPath>
     <DefineConstants>
     </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Krafs.Publicizer" Version="2.*" />
-    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.5.4033-beta" />
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4488-beta" />
   </ItemGroup>
   <ItemGroup>
     <Publicize Include="Assembly-CSharp" />
