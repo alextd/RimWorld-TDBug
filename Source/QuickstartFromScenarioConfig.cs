@@ -42,10 +42,12 @@ namespace TDBug
 
 		public static void QuickScenarioConfiguration()
 		{
+			// from SetupForQuickTestPlay but skipping the init/config as we're already past that step
 			Current.Game.storyteller = new Storyteller(StorytellerDefOf.Cassandra, DifficultyDefOf.Rough);
-			Current.Game.World = WorldGenerator.GenerateWorld(0.05f, GenText.RandomSeedString(), OverallRainfall.Normal, OverallTemperature.Normal, OverallPopulation.Normal);
+			Current.Game.World = WorldGenerator.GenerateWorld(0.3f, GenText.RandomSeedString(), OverallRainfall.Normal, OverallTemperature.Normal, OverallPopulation.Normal, LandmarkDensity.Normal);
 			Find.GameInitData.ChooseRandomStartingTile();
-			Find.GameInitData.mapSize = 150;
+			Find.GameInitData.mapSize = 250;
+			Find.Scenario.PostIdeoChosen();
 			Find.GameInitData.PrepForMapGen();
 			Find.Scenario.PreMapGenerate();
 
