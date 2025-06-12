@@ -15,7 +15,7 @@ namespace TDBug
 		public static Texture2D frame = ContentFinder<Texture2D>.Get("Things/Building/Misc/PartySpot");
 	}
 
-	[HarmonyPatch(typeof(ThingWithComps), "GetGizmos")]
+	[HarmonyPatch(typeof(ThingWithComps), nameof(ThingWithComps.GetGizmos))]
 	class GizmoCompleteBlueprint : Command
 	{
 		//public override IEnumerable<Gizmo> GetGizmos()

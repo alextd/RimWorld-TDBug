@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace TDBug
 {
-	[HarmonyPatch(typeof(Zone_Growing), "GetGizmos")]
+	[HarmonyPatch(typeof(Zone_Growing), nameof(Zone_Growing.GetGizmos))]
 	class GizmoFillGrowingZone : Command
 	{
 		//public override IEnumerable<Gizmo> GetGizmos()

@@ -8,7 +8,7 @@ using HarmonyLib;
 
 namespace TDBug
 {
-	[HarmonyPatch(typeof(Area), "Set")]
+	[HarmonyPatch(typeof(Area), nameof(Area.Set))]
 	public static class GodmodeRoof
 	{
 		//protected virtual void Set(IntVec3 c, bool val)

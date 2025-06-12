@@ -19,16 +19,16 @@ namespace TDBug
 	}
 
 	// Include the back key to trigger the highlight index change
-	[HarmonyPatch(typeof(Dialog_DebugOptionLister), "DoListingItems")]
+	[HarmonyPatch(typeof(Dialog_DebugOptionListLister), nameof(Dialog_DebugOptionListLister.DoListingItems))]
 	public static class DebugActionArrowNavigate
 	{
 		delegate void ChangeHighlightedOptionDel(Dialog_DebugOptionLister lister);
 		static ChangeHighlightedOptionDel ChangeHighlightedOption =
-			AccessTools.MethodDelegate<ChangeHighlightedOptionDel>(AccessTools.Method(typeof(Dialog_DebugOptionLister), "ChangeHighlightedOption"), virtualCall: true);
+			AccessTools.MethodDelegate<ChangeHighlightedOptionDel>(AccessTools.Method(typeof(Dialog_DebugOptionLister), nameof(Dialog_DebugOptionLister.ChangeHighlightedOption)), virtualCall: true);
 
-		public static void Postfix(Dialog_DebugOptionLister __instance)
+		public static void Prefix(Dialog_DebugOptionLister __instance)
 		{
-			if (TDKeyBindingDefOf.Dev_BackSelectedDebugAction.IsDownEvent)
+			if (TDKeyBindingDefOf.Dev_BackSelectedDebugAction.KeyDownEvent)
 			{
 				ChangeHighlightedOption(__instance);
 			}
@@ -41,21 +41,21 @@ namespace TDBug
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{
-			MethodInfo IsDownEventInfo = AccessTools.PropertyGetter(typeof(KeyBindingDef), nameof(KeyBindingDef.IsDownEvent));
+			MethodInfo IsDownEventInfo = AccessTools.PropertyGetter(typeof(KeyBindingDef), nameof(KeyBindingDef.KeyDownEvent));
 
 			foreach (var inst in instructions)
 			{
 				if(inst.Calls(IsDownEventInfo))
 				{
-					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DebugActionArrowNavigate_Dialog_Debug), nameof(IsDownEventOrOtherKeyIsDown)));
+					yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DebugActionArrowNavigate_Dialog_Debug), nameof(KeyDownEventOrOtherKeyIsDown)));
 				}
 				else yield return inst;
 			}
 		}
 
-		public static bool IsDownEventOrOtherKeyIsDown(KeyBindingDef kDef)
+		public static bool KeyDownEventOrOtherKeyIsDown(KeyBindingDef kDef)
 		{
-			return kDef.IsDownEvent || TDKeyBindingDefOf.Dev_BackSelectedDebugAction.IsDownEvent;
+			return kDef.KeyDownEvent || TDKeyBindingDefOf.Dev_BackSelectedDebugAction.KeyDownEvent;
 		}
 	}
 
@@ -94,7 +94,7 @@ namespace TDBug
 
 	//Reverse order for TDKeyBindingDefOf.Dev_BackSelectedDebugAction.KeyDownEvent
 	//protected override void ChangeHighlightedOption()
-	[HarmonyPatch(typeof(Dialog_DebugOptionListLister), "ChangeHighlightedOption")]
+	[HarmonyPatch(typeof(Dialog_DebugOptionListLister), nameof(Dialog_DebugOptionListLister.ChangeHighlightedOption))]
 	public static class ReverseChangeOrder
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

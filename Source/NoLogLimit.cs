@@ -3,9 +3,13 @@ using HarmonyLib;
 
 namespace TDBug
 {
-	[HarmonyPatch(typeof(Log), "ReachedMaxMessagesLimit", MethodType.Getter)]
+	[HarmonyPatch(typeof(Log), nameof(Log.PreventLogging), MethodType.Getter)]
 	class NoLogLimit
 	{
-		public static void Postfix(ref bool __result) => __result = false;
+		public static bool Prefix(ref bool __result)
+		{
+			__result = Log.logDisablers > 0; // skip reachedMaxMessagesLimit check
+			return false;
+		}
 	}
 }

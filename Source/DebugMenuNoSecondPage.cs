@@ -22,7 +22,7 @@ namespace TDBug
 	}
 	*/
 
-	[HarmonyPatch(typeof(DebugTabMenu_Actions), "GenerateCacheForMethod")]
+	[HarmonyPatch(typeof(DebugTabMenu_Actions), nameof(DebugTabMenu_Actions.GenerateCacheForMethod))]
 	public static class DebugMenuNoSecondPage
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

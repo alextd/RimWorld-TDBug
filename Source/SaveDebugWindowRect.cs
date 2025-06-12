@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace TDBug
 {
-	[HarmonyPatch(typeof(Window), "SetInitialSizeAndPosition")]
+	[HarmonyPatch(typeof(Window), nameof(Window.SetInitialSizeAndPosition))]
 	public static class LoadWindowSize
 	{
 		public static HashSet<Type> windowTypes = new HashSet<Type>()
@@ -28,7 +28,7 @@ namespace TDBug
 		}
 	}
 	
-	[HarmonyPatch(typeof(Window), "PreClose")]
+	[HarmonyPatch(typeof(Window), nameof(Window.PreClose))]
 	public static class SaveWindowSize
 	{
 		public static void Prefix(Window __instance)

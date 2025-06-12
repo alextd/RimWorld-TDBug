@@ -10,7 +10,7 @@ using HarmonyLib;
 
 namespace TDBug
 {
-	[HarmonyPatch(typeof(Page_ModsConfig), "PreOpen")]
+	[HarmonyPatch(typeof(Page_ModsConfig), nameof(Page_ModsConfig.PreOpen))]
 	class OpenSaveList
 	{
 		public static List<string> modIDs;
@@ -20,7 +20,7 @@ namespace TDBug
 		}
 	}
 	
-	[HarmonyPatch(typeof(Page_ModsConfig), "PostClose")]
+	[HarmonyPatch(typeof(Page_ModsConfig), nameof(Page_ModsConfig.PostClose))]
 	class CloseConfirm
 	{
 		public static bool Prefix(Page_ModsConfig __instance, int ___activeModsWhenOpenedHash, bool ___discardChanges)

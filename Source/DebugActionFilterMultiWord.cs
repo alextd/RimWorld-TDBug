@@ -11,7 +11,7 @@ namespace TDBug
 {
 	//The original filter method checked an exact substring so "pawn spawn" wouldn't find "spawn pawn"
 	//Let's separate by word
-	[HarmonyPatch(typeof(Dialog_OptionLister), "FilterAllows")]
+	[HarmonyPatch(typeof(Dialog_OptionLister), nameof(Dialog_OptionLister.FilterAllows))]
 	public static class FilterSplitOnSpace
 	{
 		//protected bool FilterAllows(string label)
@@ -26,7 +26,7 @@ namespace TDBug
 	}
 
 	// 1.4 Added Dialog_Debug for the main debug actions menu, Dialog_OptionLister kept for various sub-option menus
-	[HarmonyPatch(typeof(Dialog_Debug), "FilterAllows")]
+	[HarmonyPatch(typeof(Dialog_Debug), nameof(Dialog_Debug.FilterAllows))]
 	static class FilterSplitOnSpace_Dialog_Debug
 	{
 		//protected bool FilterAllows(string label)

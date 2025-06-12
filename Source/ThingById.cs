@@ -100,7 +100,7 @@ namespace TDBug
 		}
 	}
 
-	[HarmonyPatch(typeof(EditWindow_DebugInspector), "CurrentDebugString")]
+	[HarmonyPatch(typeof(EditWindow_DebugInspector), nameof(EditWindow_DebugInspector.CurrentDebugString))]
 	public static class ThingById_Readout
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
